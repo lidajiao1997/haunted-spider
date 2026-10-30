@@ -1,0 +1,280 @@
+\chapter{调个三线表半小时，竖线还总对不齐}
+
+\begin{notebox}
+本章解决表格问题：学术圈通用的三线表，在 LaTeX 里只要三条命令。
+\end{notebox}
+
+\painhead{烦恼}
+
+“导师要三线表，我在 Word 里数着边框线一条条加，竖线删了又冒出来。”
+
+\painhead{现象 · 这些场景你肯定见过}
+
+\textbf{场景一}：毕业论文要求三线表（只有顶线、中线、底线，不许竖线）。你在 Word 的“边框和底纹”对话框里进进出出，删一条竖线另一条又回来；好不容易删干净，宽度一改，线又乱了。
+
+\textbf{场景二}：十几行的表跨页了，Word 爱在哪断在哪断，新页上没有表头，读者对着“孤儿行”猜它属于谁。
+
+\textbf{场景三}：数模论文要在表下加注“注：数据来源于统计年鉴”。你敲的字和正文格式一模一样，导师批注：“这是表注，格式重排。”
+
+病根：Word 的表格是“画”出来的，边框一格一格设。LaTeX 的解法一句话：\textbf{表格先说结构，再说穿什么衣服——三线表是默认礼服，穿上就行。}
+
+\painhead{解决线路}
+
+\subsection*{7.1 基础表格：tabular 环境}
+
+新建文件，敲进去，引擎选 XeLaTeX，点绿色“排版”按钮：
+
+\begin{lstlisting}
+\documentclass[UTF8]{ctexart}
+\begin{document}
+
+\begin{tabular}{lcr}
+  姓名 & 学号 & 成绩 \\
+  张三 & 001 & 92 \\
+  李四 & 002 & 85 \\
+\end{tabular}
+
+\end{document}
+\end{lstlisting}
+
+\textbf{逐行拆解}：
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item \texttt{\textbackslash{}begin\{tabular\}\{lcr\}}：开一个表格。花括号里的 \texttt{lcr} 是\textbf{列格式}，从左到右声明每列怎么对齐——\texttt{l} 左对齐、\texttt{c} 居中、\texttt{r} 右对齐。三列写三个字母，五列写五个；
+\item 单元格之间用 \texttt{\&} 隔开，行末用 \texttt{\textbackslash{}\textbackslash{}} 结束——和公式的 align 环境同一套逻辑：\textbf{\texttt{\&} 分列，\texttt{\textbackslash{}\textbackslash{}} 换行}；
+\item 列格式 n 个字母，每行最多 n−1 个 \texttt{\&}。多一个少一个都报错，这是表格章头号翻车原因。
+\end{itemize}
+
+\subsection*{7.2 三线表：booktabs 三条命令}
+
+先说结论：\textbf{学术表格禁竖线}，国际期刊和学位论文规范一律不要；同时\textbf{别用 \texttt{\textbackslash{}hline}}——它是细而挤的土横线。正统装备是 \texttt{booktabs} 包的三条命令。导言区加 \texttt{\textbackslash{}usepackage\{booktabs\}}：
+
+\begin{lstlisting}
+\documentclass[UTF8]{ctexart}
+\usepackage{booktabs}
+\begin{document}
+
+\begin{tabular}{lcc}
+  \toprule
+  姓名 & 平时成绩 & 期末成绩 \\
+  \midrule
+  张三 & 90 & 88 \\
+  李四 & 85 & 92 \\
+  王五 & 78 & 81 \\
+  \bottomrule
+\end{tabular}
+
+\end{document}
+\end{lstlisting}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{命令} & \textbf{位置} & \textbf{作用} \\
+\midrule
+\texttt{\textbackslash{}toprule} & 表头之上 & 顶线（最粗） \\
+\texttt{\textbackslash{}midrule} & 表头之下 & 中线（细） \\
+\texttt{\textbackslash{}bottomrule} & 最后一行之下 & 底线（最粗，和顶线呼应） \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+三个词往该放的位置一插，三线表成了——线有粗细层次，行距自动舒展。金句送上：\textbf{三线表 = \texttt{\textbackslash{}toprule} \texttt{\textbackslash{}midrule} \texttt{\textbackslash{}bottomrule}，没了。}
+
+\subsection*{7.3 合并单元格：\textbackslash{}multicolumn 和 \textbackslash{}multirow}
+
+横向合并（跨列）用 \texttt{\textbackslash{}multicolumn\{跨几列\}\{对齐\}\{内容\}}，第二个花括号里要\textbf{重新写对齐字母}（如 \texttt{c}），它覆盖原来的列格式。纵向合并（跨行）要先在导言区加 \texttt{\textbackslash{}usepackage\{multirow\}}，再用 \texttt{\textbackslash{}multirow\{跨几行\}\{宽度\}\{内容\}}，且跨行的\textbf{下一行}对应位置要空着（只写 \texttt{\&} 不填内容）。一起上：
+
+\begin{lstlisting}
+\begin{tabular}{lcc}
+  \toprule
+                 & \multicolumn{2}{c}{成绩} \\
+  \cmidrule(lr){2-3}
+  姓名           & 平时    & 期末 \\
+  \midrule
+  \multirow{2}{*}{一班} & 张三 & 92 \\
+                 & 李四   & 85 \\
+  \bottomrule
+\end{tabular}
+\end{lstlisting}
+
+\texttt{\textbackslash{}cmidrule(lr)\{2-3\}} 是 booktabs 附送的：给第 2\textasciitilde{}3 列画一条\textbf{局部横线}，\texttt{(lr)} 表示线的两端留空隙——表头分组线的标准做法，Word 里想都不敢想。
+
+\subsection*{7.4 表太宽溢出页面：缩字号或缩放}
+
+\begin{lstlisting}
+{\small                        % 武器一：缩小字号（再小用 \footnotesize）
+\begin{tabular}{...}
+...
+\end{tabular}
+}
+
+% 武器二：整体缩放（导言区需 \usepackage{graphicx}，第 4 章的旧相识）
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{...}
+...
+\end{tabular}
+}
+\end{lstlisting}
+
+\texttt{\textbackslash{}resizebox\{\textbackslash{}textwidth\}\{!\}} 表示“缩放到正好占满一行宽，高度等比例”。注意缩放后字也跟着变小——列特别多的表（数模常用），这是最后的救命稻草。
+
+\subsection*{7.5 跨页长表：longtable}
+
+几十行的表（问卷数据、字频统计），导言区加 \texttt{\textbackslash{}usepackage\{longtable\}}，把 \texttt{tabular} 换成 \texttt{longtable}：
+
+\begin{lstlisting}
+\begin{longtable}{lcc}
+  \toprule
+  姓名 & 学号 & 成绩 \\
+  \midrule
+  \endfirsthead
+
+  \toprule
+  姓名 & 学号 & 成绩 \\
+  \midrule
+  \endhead
+
+  张三 & 001 & 92 \\
+  李四 & 002 & 85 \\
+  % ……中间几十行随便写
+  \bottomrule
+\end{longtable}
+\end{lstlisting}
+
+\textbf{关键处就两个}：
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item \texttt{\textbackslash{}endfirsthead}：\textbf{第一页}用的表头到此结束；
+\item \texttt{\textbackslash{}endhead}：\textbf{换页后每一页}自动重复的表头到此结束——场景二的“孤儿行没表头”就此根治。
+\end{itemize}
+
+表体正常写，多长都行，LaTeX 自己断页、自动补表头。注意：\texttt{longtable} 是普通环境，\textbf{不放进 \texttt{table} 浮动体}（浮动体是给短表用的，见 7.7）。
+
+\subsection*{7.6 表注：threeparttable}
+
+导言区加 \texttt{\textbackslash{}usepackage\{threeparttable\}}，把表格和表注一起包进 \texttt{threeparttable} 环境：
+
+\begin{lstlisting}
+\begin{table}[htbp]
+  \centering
+  \begin{threeparttable}
+    \caption{各组成绩统计}
+    \label{tab:scores}
+    \begin{tabular}{lcc}
+      \toprule
+      组别 & 平均分 & 标准差 \\
+      \midrule
+      A 组 & 88.2 & 3.1 \\
+      B 组 & 85.7 & 4.5 \\
+      \bottomrule
+    \end{tabular}
+    \begin{tablenotes}
+      \item 注：数据来源于 2024 年秋季学期教学统计。
+      \item 标准差保留一位小数。
+    \end{tablenotes}
+  \end{threeparttable}
+\end{table}
+\end{lstlisting}
+
+\texttt{tablenotes} 里每条 \texttt{\textbackslash{}item} 自动是小字号，宽度跟着表格对齐——不再和正文抢格式。
+
+\subsection*{7.7 完整实战：从 Excel 数据到论文三线表}
+
+场景还原：Excel 里有一张学生成绩表（姓名、平时、期末、总评，张三/李四/王五三行数据），要排成论文三线表。在 TeXworks 里新建文件，写完整代码（直接抄走就能编译）：
+
+\begin{lstlisting}
+\documentclass[UTF8]{ctexart}
+\usepackage{booktabs}
+\usepackage{threeparttable}
+\begin{document}
+
+文字里引用它：如表~\ref{tab:grades} 所示，总评成绩……
+
+\begin{table}[htbp]
+  \centering
+  \caption{实验班学生成绩统计表}
+  \label{tab:grades}
+  \begin{threeparttable}
+    \begin{tabular}{lccc}
+      \toprule
+      姓名 & 平时成绩 & 期末成绩 & 总评 \\
+      \midrule
+      张三 & 90 & 88 & 88.8 \\
+      李四 & 85 & 92 & 89.8 \\
+      王五 & 78 & 81 & 80.1 \\
+      \bottomrule
+    \end{tabular}
+    \begin{tablenotes}
+      \item 注：总评 = 平时成绩 $\times$ 40\% + 期末成绩 $\times$ 60\%。
+    \end{tablenotes}
+  \end{threeparttable}
+\end{table}
+
+\end{document}
+\end{lstlisting}
+
+XeLaTeX 排版\textbf{两遍}（第一遍生成编号，第二遍让 \texttt{\textbackslash{}ref} 认到号——第 3 章讲过的“编译两遍”真理），PDF 里出现带编号“表 1”、可被正文引用的标准三线表。拆解要点：
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item \texttt{table} 浮动体：位置交给 LaTeX 安排（\texttt{[htbp]} 第 4 章讲过，“它自己会找不碍事的地方放”）；
+\item \texttt{\textbackslash{}caption} 给编号，\texttt{\textbackslash{}label} 跟在 \texttt{\textbackslash{}caption} \textbf{后面}（顺序反了编号差一，第 5 章的老教训）；
+\item 以后换数据、加行删行，三条线命令原封不动，你只动数据行。
+\end{itemize}
+
+\painhead{Word 做法 vs LaTeX 做法 · 对照小结}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{事项} & \textbf{Word 做法} & \textbf{LaTeX 做法} \\
+\midrule
+三线表 & "边框和底纹"对话框里数着加横线 & \texttt{\textbackslash{}toprule} \texttt{\textbackslash{}midrule} \texttt{\textbackslash{}bottomrule} 三条命令 \\
+竖线 & 一格一格删，删了又冒 & 压根没画过，谈不上删 \\
+合并单元格 & 选中右键"合并" & \texttt{\textbackslash{}multicolumn} / \texttt{\textbackslash{}multirow} \\
+表太宽 & 拖列宽拖到天荒地老 & \texttt{\textbackslash{}small} 或 \texttt{\textbackslash{}resizebox} 一行解决 \\
+跨页长表 & 表头断页就丢，手动补 & \texttt{longtable} 自动断页自动补表头 \\
+表注 & 表下敲字，格式和正文打架 & \texttt{threeparttable} 自动小字对齐 \\
+编号与引用 & 手打"表 1"，插一张全重排 & \texttt{\textbackslash{}caption} + \texttt{\textbackslash{}label} + \texttt{\textbackslash{}ref} 全自动 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\painhead{翻车合集}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{症状} & \textbf{原因} & \textbf{解法} \\
+\midrule
+\texttt{! Extra alignment tab has been changed to \textbackslash{}cr} & 某行 \texttt{\&} 的个数和列格式对不上 & 数一数：列格式 n 个字母，每行最多 n−1 个 \texttt{\&} \\
+\texttt{! Undefined control sequence. ... toprule} & 忘了 \texttt{\textbackslash{}usepackage\{booktabs\}} & 导言区补上 \\
+三线表有竖线 & 你自己写的 \texttt{\{l|c|c\}} 列格式 & 列格式里别写竖线，学术表禁竖线 \\
+表格一半跑出页面右边 & 列太多太宽 & \texttt{\textbackslash{}small} 缩字号，或 \texttt{\textbackslash{}resizebox\{\textbackslash{}textwidth\}\{!\}\{...\}} \\
+\texttt{\textbackslash{}multirow} 内容叠错格子 & 跨行的下一格没空出来 & 下一行对应位置只留 \texttt{\&}，不填内容 \\
+引用出现"？?" & 没编译两遍，或 \texttt{\textbackslash{}label} 写在 \texttt{\textbackslash{}caption} 前 & 再点一次排版按钮；label 放 caption 后面 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section*{练习}
+
+\begin{enumerate}
+\setlength{\itemsep}{2pt}
+\item 用 \texttt{booktabs} 排一个你专业课真实数据的三线表，至少 4 列 5 行，数字列居中；
+\item 给上题的表头加一层 \texttt{\textbackslash{}multicolumn} 分组（比如“成绩”横跨两列），配 \texttt{\textbackslash{}cmidrule(lr)}；
+\item 做一个 30 行以上的长表（数据可以编），用 \texttt{longtable} + \texttt{\textbackslash{}endhead}，编译后翻到第二页确认表头还在；
+\item 把 7.7 的实战代码抄进 TeXworks 编译两遍，然后\textbf{删掉一行数据}再编译两遍，观察表号和正文引用纹丝不动；
+\item \textbf{故意翻车题}：在 7.1 的基础表格里给某一行多敲一个 \texttt{\&}（四格内容挤进三列表），排版后去控制台找 \texttt{Extra alignment tab} 这条报错，看它指的行号对不对——以后表多列一多，你靠它救命。
+\end{enumerate}
+
+至此，论文的“表格零件”也齐了。下一章是学术写作的最后一只拦路虎：\textbf{参考文献}——导师要 GB/T 7714，你再也不用手打一下午了。

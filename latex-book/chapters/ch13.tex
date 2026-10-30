@@ -1,0 +1,199 @@
+\chapter{导师扔来一个 PDF：照这个格式做}
+
+\begin{notebox}
+本章解决大学生最常见的“被模板支配”问题：学校论文模板、期刊模板、比赛模板，下载下来不敢动、一动就崩。学完这章，任何模板到你手里都是“先试车，再上路”。
+\end{notebox}
+
+\painhead{烦恼}
+
+“学校发了论文模板，我打开一改就报错，导师还发来个 PDF 说'照这个格式做'，我连从哪个文件下手都不知道。”
+
+再补一刀：模板压缩包里七八个 \texttt{.tex} 文件、一堆 \texttt{.cls} \texttt{.sty}，长得都一样，改哪个？全靠玄学。
+
+\painhead{现象 · 这些场景你肯定见过}
+
+\textbf{场景一}：为了仿着导师给的 PDF 排版，你在 Word 里对着标尺一毫米一毫米地对——页边距、行距、标题间距，对了一下午，导师一句“整体感觉还是不太对”让你当场想退学。
+
+\textbf{场景二}：从学校教务处网站下载了 LaTeX 毕业论文模板，兴冲冲打开 \texttt{main.tex}，把自己论文内容粘进去，点排版按钮——报错。删掉一点，还报错。再删一点，报的是另一个错。最后你得出结论：这模板是坏的。
+
+\textbf{场景三}：数模比赛官方模板要求用 XeLaTeX，你用默认的 pdfLaTeX 编，控制台报了一屏错，你在群里问“模板是不是有问题”，学长回了一句：“先看看你的引擎选对没。”
+
+先立一个心态：\textbf{模板报错，不一定是模板的错——先怀疑自己改坏了什么。} 官方模板被几千人下载验证过，坏的概率远小于你手滑的概率。
+
+\painhead{解决线路}
+
+\subsection*{13.1 读模板的标准动作：五步法}
+
+拿到任何一个模板（学校的、期刊的、比赛的），别急着改内容。按这五步走：
+
+\textbf{第一步：原样编译一遍。} 什么都不改，解压到一个全英文路径的文件夹，用 TeXworks 打开主文件（一般叫 \texttt{main.tex}，稍后教你怎么认），引擎按模板说明选（说明没写就先试 XeLaTeX），点绿色“排版”按钮。
+
+这一步的目的是\textbf{确认模板在你机器上是好的}。编出来一个完整的示例 PDF，说明模板、你的 TeX Live、引擎三者都没问题——以后再出错，就一定是你改的。
+
+\begin{notebox}
+\textbf{金句}：先证明车是好的，再上路。不然出了事故，你都不知道该怪谁。
+\end{notebox}
+
+\textbf{第二步：找示例文件。} 很多模板自带 \texttt{example/}、\texttt{sample/} 或 \texttt{demo} 文件夹，或者模板本身编出来的 PDF 就是一份排版好的示例。对着这个 PDF 看：标题长什么样、摘要放哪、图表怎么排。这个 PDF 就是导师嘴里“照这个格式做”的那个“格式”。
+
+\textbf{第三步：只改内容区，不碰导言区。} 找到正文开始的位置（\texttt{\textbackslash{}begin\{document\}} 之后），把示例文字换成你的内容。\texttt{\textbackslash{}begin\{document\}} 之前的所有东西——\texttt{\textbackslash{}documentclass}、\texttt{\textbackslash{}usepackage}、各种设置——\textbf{一个字都别动}。那是模板作者调好的格式心脏，你动一下，全文跟着抖。
+
+\textbf{第四步：每改一处，编译一次。} 改完一段就点一次排版按钮。这样一旦报错，你立刻知道是刚才那一段干的。一次粘进去三页内容再编译，报错了你就得在三页里大海捞针。
+
+\begin{notebox}
+\textbf{金句}：小步快跑。改一处、编一次，错误永远跑不出“你刚敲的那几行”。
+\end{notebox}
+
+\textbf{第五步：出错立刻回退。} 每次编译成功后，把当前版本存档（最简单的土办法：复制整个文件夹，命名为 \texttt{模板-能编译-10月12日}；进阶点就用 git，第 11 章之外不展开）。一旦改崩了，回退到上一个能编译的版本重来，别在一个崩掉的版本上硬修——越修崩得越远。
+
+\subsection*{13.2 解剖一个典型的高校毕业论文模板}
+
+市面上高校模板长得都差不多，以一个最常见的结构为例：
+
+\begin{lstlisting}
+my-thesis/
+├── main.tex          ← 主文件，你从这里开始
+├── setup/
+│   ├── format.tex    ← 格式设置（页边距、标题样式、页眉页脚）
+│   └── cover.tex     ← 封面
+├── chapters/
+│   ├── chap1.tex     ← 第一章 绪论
+│   ├── chap2.tex     ← 第二章 方法
+│   └── chap3.tex     ← 第三章 结果
+├── figures/          ← 图片都放这里
+│   └── framework.pdf
+├── refs.bib          ← 参考文献（第 8 章讲过）
+└── readme.pdf        ← 使用说明，必读！
+\end{lstlisting}
+
+用 TeXworks 打开 \texttt{main.tex}，你会看到类似这样的骨架：
+
+\begin{lstlisting}
+\documentclass[UTF8, 12pt, a4paper]{ctexbook}
+\input{setup/format}     % 格式设置，别动
+\input{setup/cover}      % 封面，改成你的姓名学号
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\input{chapters/chap1}
+\input{chapters/chap2}
+\input{chapters/chap3}
+
+\bibliography{refs}
+\bibliographystyle{gb7714-2015}
+\end{document}
+\end{lstlisting}
+
+\textbf{怎么分清“哪些是格式别碰、哪些是内容随便改”？一张表：}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{文件 / 位置} & \textbf{性质} & \textbf{你的操作} \\
+\midrule
+\texttt{\textbackslash{}documentclass} 一行 & 格式心脏 & 别碰 \\
+\texttt{setup/} 里的一切 & 格式设置 & 别碰（除非 readme 明确让你改，比如改姓名学号的封面信息） \\
+\texttt{chapters/} 里的 \texttt{.tex} & 纯内容 & 随便改，随便写 \\
+\texttt{figures/} & 你的图 & 往里放图，\texttt{\textbackslash{}includegraphics} 引用 \\
+\texttt{refs.bib} & 你的文献 & 往里加条目 \\
+\texttt{\textbackslash{}input\{...\}} 那几行 & 目录索引 & 只增删行，别改语法 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{逐行拆解关键点}：
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item \texttt{\textbackslash{}input\{setup/format\}}：把 \texttt{setup/format.tex} 的内容原样搬进来——所以格式都藏在那个文件里，主文件看着干净；
+\item \texttt{\textbackslash{}input\{chapters/chap1\}}：同理，每一章单独一个文件（第 12 章讲过拆文件的好处，模板就是标准示范）；
+\item \texttt{\textbackslash{}bibliographystyle\{gb7714-2015\}}：国标参考文献样式，模板作者已经替你配好了，你就说香不香。
+\end{itemize}
+
+一句话总结：\textbf{模板就是一栋精装房，墙和管线不许拆，家具随便换。}
+
+\subsection*{13.3 模板常见报错排查清单}
+
+改模板报错了？先别慌，按这张清单挨个对：
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{报错 / 症状} & \textbf{原因} & \textbf{解法} \\
+\midrule
+\texttt{! LaTeX Error: File 'xxx.sty' not found.} & 缺宏包 & 见下方专治段落 \\
+控制台刷屏报 \texttt{fontspec} 相关错 & 模板要求 XeLaTeX，你用了 pdfLaTeX & 引擎下拉菜单换 \textbf{XeLaTeX}，重编 \\
+\texttt{! I can't find file 'chap1.tex'.} & \texttt{\textbackslash{}input} 的路径或文件名不对 & 检查文件是否在对应文件夹、名字是否拼对（大小写也算） \\
+中文变空白方块 & 引擎选错或缺 \texttt{UTF8} 选项 & 换 XeLaTeX；别动模板的 \texttt{\textbackslash{}documentclass} \\
+编译半天卡在某个包上 & 控制台在等你按回车 & 看第一条 \texttt{!} 开头的行，红 \ensuremath{\times} 停掉，改完再来 \\
+编出来格式跟示例 PDF 不一样 & 你动了导言区或 setup/ & 回退到能编译的版本，重来 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{专治 “File 'xxx.sty' not found”}：
+
+\texttt{.sty} 就是宏包文件（第 6 章的 amsmath、第 7 章的 booktabs 都是）。报这个错，按顺序检查：
+
+\begin{enumerate}
+\setlength{\itemsep}{2pt}
+\item \textbf{是不是拼错了}？比如模板要 \texttt{gbt7714} 你手敲成了 \texttt{gb7714}，一个字母都不能差；
+\item \textbf{TeX Live 里一般都有}——TeX Live 是全家桶，绝大多数 \texttt{.sty} 都自带。九成的“缺包”其实是拼错或者文件没装全；
+\item \textbf{模板是否要求旧编译器或特殊引擎}？看 \texttt{readme.pdf}，有些老模板要求特定版本的 TeX Live，实在不行按说明装宏包（\texttt{tlmgr install 包名}，在 cmd 里敲）；
+\item 都不是？回模板的 GitHub 页面搜 issues——你遇到的坑，前面大概率有人踩过并留了字条。
+\end{enumerate}
+
+\painhead{Word 做法 vs LaTeX 做法 · 对照小结}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{事项} & \textbf{Word 做法} & \textbf{LaTeX 做法} \\
+\midrule
+仿照 PDF 排版 & 肉眼对标尺，一毫米一毫米调 & 模板替你排好，你只填内容 \\
+模板到手第一步 & 直接开改 & 原样编译一遍，确认是好的 \\
+改内容出问题 & 不知道哪步弄坏的，Undo 到天荒地老 & 小步快跑，改一处编一次，错误范围锁死 \\
+改崩了 & 另存无数个"最终版-真的最终版" & 回退到上一个能编译的存档 \\
+格式不达标被打回 & 再对一轮标尺 & 模板就是格式标准，达标是天然的 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\painhead{翻车合集}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{症状} & \textbf{原因} & \textbf{解法} \\
+\midrule
+模板原样编译就报错 & 路径有中文/空格，或引擎不对 & 文件夹移到全英文路径；按 readme 选引擎 \\
+改了几页后报错，不知道哪改的 & 一次改太多才编译 & 回退存档，重新小步快跑 \\
+\texttt{xxx.sty not found} 反复出现 & 宏包真没装（TeX Live 装的时候精简过头） & \texttt{tlmgr install 包名} 补装 \\
+示例内容删了，编译报奇怪错误 & 把 \texttt{\textbackslash{}begin\{document\}} 前后的结构命令也删了 & 对比模板原始版本，恢复结构命令 \\
+编出来的 PDF 和示例长得不一样 & 悄悄"优化"了 setup/ 里的设置 & 别优化，那是作者调好的，恢复 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section*{练习}
+
+\begin{enumerate}
+\setlength{\itemsep}{2pt}
+\item 去你学校教务处（或数模官网）下载一份官方 LaTeX 模板，执行五步法的第一步：什么都不改，原样编译出 PDF；
+\item 打开模板主文件，把里面的文件分成两列写下来：一列“格式，别碰”，一列“内容，随便改”；
+\item 在 \texttt{chapters/} 里改一段内容并编译成功后，把整个文件夹复制一份，命名成“能编译-日期”，体验回退保险；
+\item 在内容区故意敲一行 \texttt{\textbackslash{}usepackage\{tikz\}}（放错位置到正文里），编译看报错，理解“为什么导言区的东西不能出现在正文”，然后恢复；
+\item \textbf{故意翻车题}：把 \texttt{\textbackslash{}documentclass} 那一行整个删掉再编译，观察控制台的报错长什么样——记住这个“我动了不该动的东西”的标准惨状。以后见到类似的错，第一反应就是“我是不是动了导言区”。
+\end{enumerate}
+
+毕业论文搞定了，导师又发话了：“下周组会，做个 PPT 汇报一下进度。”别急着打开 PowerPoint——下一章告诉你，LaTeX 连幻灯片都能包了，公式图表直接从论文里搬。

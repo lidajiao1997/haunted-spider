@@ -1,0 +1,184 @@
+\chapter{Word 好好的，我为什么要受这个罪？}
+
+\begin{notebox}
+本章解决一个终极问题：值不值得。顺便，咱们把环境装好，跑出人生第一个 PDF。
+\end{notebox}
+
+\painhead{烦恼}
+
+先坦白：你打开这本书，多半不是出于对排版艺术的热爱，而是被逼的——
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item 毕业论文格式审查被打回来三次；
+\item 数学建模比赛队友说“公式你也敢用 Word 写？”；
+\item 导师把你的文档批注得满江红，第一条就是“标题格式不统一”。
+\end{itemize}
+
+你一边骂骂咧咧一边想：Word 我用了十几年了，凭什么让我学个新东西？
+
+问得好。这一章就来回答“凭什么”。
+
+\subsection*{1.1 一张表看懂：哪些罪 LaTeX 替你受，哪些还得你自己受}
+
+先泼冷水：\textbf{LaTeX 不是万能的}。如果你只是写个几百字的通知、做一张社团招新海报，Word 更快，别折腾。
+
+但如果你要写\textbf{带编号的长文档}——论文、报告、实验记录、数模论文——那下面这张表就是你的救命稻草：
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{2}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{你在 Word 里的烦恼} & \textbf{LaTeX 的回答} \\
+\midrule
+删一张图，后面几十个编号全要手动改 & 编号是自动的，删图加图它自己重排 \\
+目录和页码交稿前要"更新域"，忘了就是灾难 & 编译一遍，目录永远是新的 \\
+公式编辑器点到怀疑人生 & 公式就是打字，\texttt{x\textasciicircum{}2} 就是 x 的平方 \\
+参考文献格式换个期刊全要重排 & 存一个 .bib 文件，格式是机器的事 \\
+改一个标题格式，全文跟着动 & 内容和格式分开，改一处全局生效 \\
+图一插进来，后面的字全飞了 & 图的位置交给 LaTeX，它比你更会放 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+看明白了吗？Word 的哲学是“\textbf{所见即所得}”——你直接在纸上涂改，改乱了是你的事。LaTeX 的哲学是“\textbf{你管内容，格式我来}”——你只负责说“这里是个标题”“这里是一张图”，长什么样、编几号、放哪里，它说了算。
+
+前两周你会觉得别扭（就像从按键手机换到触屏），过了这个坎，你会回不去的。
+
+\subsection*{1.2 装 TeX Live：一步到位，别装别的}
+
+书店里五花八门，咱们统一用 \textbf{TeX Live + TeXworks}。TeX Live 是LaTeX 本体，TeXworks 是它自带的编辑器——装完 TeX Live 就有，不用单独下。
+
+\textbf{安装步骤}（Windows）：
+
+\begin{enumerate}
+\setlength{\itemsep}{2pt}
+\item 去清华镜像下载安装包：搜“TeX Live 清华镜像”，下载 \texttt{install-tl-windows.exe}；
+\item 双击运行。\textbf{重要}：安装界面里把“安装 TeXworks 前端”勾上（默认是勾的，别手贱取消）；
+\item 点安装，然后去干点别的——下载大约 4GB，装 30 分钟到 1 小时，够你看两集番；
+\item 装完验证：按 \texttt{Win + R}，输入 \texttt{cmd} 回车，在黑窗口里敲：
+\end{enumerate}
+
+\begin{lstlisting}
+xelatex --version
+\end{lstlisting}
+
+如果蹦出来一堆版本信息（而不是“不是内部或外部命令”），恭喜，装好了。
+
+\begin{notebox}
+\textbf{小提示}：硬盘紧张的同学可以在安装界面里把不需要的语言包（比如阿拉伯语、印地语那一大串）取消勾选，能省 1\textasciitilde{}2GB。中文包（chinese）必须留！
+\end{notebox}
+
+\subsection*{1.3 认识 TeXworks：你以后的工作台}
+
+从开始菜单打开 \textbf{TeXworks}。界面朴素得让人感动——一个白框，几排菜单，没了。你只需要认识三个东西：
+
+\begin{enumerate}
+\setlength{\itemsep}{2pt}
+\item \textbf{中间的大白框}：写代码的地方；
+\item \textbf{左上角绿色的“排版”按钮}：相当于 Word 的“打印预览”，点一下就编译并生成 PDF；
+\item \textbf{排版按钮旁边的下拉菜单}：写着 \texttt{pdfLaTeX} 之类，这是\textbf{引擎选择}。记住一句话：\textbf{写中文，选 XeLaTeX}。选错了是新手第一大翻车原因，后面细说。
+\end{enumerate}
+
+先做一件事：菜单栏 \texttt{编辑 \ensuremath{\rightarrow} 首选项}，确认“语法高亮”选了 LaTeX，行号打上勾。\textbf{行号必须开}——因为报错信息靠行号定位，不开行号约等于闭眼修车。
+
+\subsection*{1.4 第一个文档：Hello LaTeX}
+
+新建文件（\texttt{Ctrl + N}），原样敲进去（别复制粘贴！手打一遍，肌肉记忆很重要）：
+
+\begin{lstlisting}
+\documentclass{article}
+\begin{document}
+
+Hello, LaTeX! 这是我的第一个文档。
+
+\end{document}
+\end{lstlisting}
+
+保存（\texttt{Ctrl + S}）。\textbf{注意：文件名用英文，放在一个好找的英文文件夹里}，比如 \texttt{D:\textbackslash{}latex\textbackslash{}hello.tex}。文件名带中文或空格，是新手第二大翻车原因。
+
+然后，引擎选 \textbf{XeLaTeX}，点那个绿色“排版”按钮。
+
+如果一切顺利，右边会弹出一个 PDF，上面写着你的那句话。同时你的文件夹里多出了 \texttt{hello.pdf}——这就是成品，可以直接发给任何人。
+
+\textbf{逐行拆解这几行代码}（这四行撑起你以后写的所有文档）：
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item \texttt{\textbackslash{}documentclass\{article\}}：告诉 LaTeX“我要写一篇文章”。\texttt{article} 是文档类型，还有 \texttt{report}（分章的报告）和 \texttt{book}（书）。以后第 2 章细说；
+\item \texttt{\textbackslash{}begin\{document\}} 和 \texttt{\textbackslash{}end\{document\}}：正文从这里开始、到那里结束。中间的区域之外叫“导言区”，是放设置的地方；
+\item \texttt{\textbackslash{}documentclass} 这行开头没有空行分隔——\textbf{LaTeX 里，空行表示分段}，这是个核心规则，第 2 章细讲；
+\item 所有以 \texttt{\textbackslash{}} 开头的都是\textbf{命令}，就是给 LaTeX 下达的指令。
+\end{itemize}
+
+\subsection*{1.5 试试中文}
+
+上面那个文档你已经发现：“这是我的第一个文档”能正常显示吗？用 XeLaTeX 编译的话，能。但要排得像模像样（宋体正文、正确的缩进），请改用中文专用的文档类：
+
+\begin{lstlisting}
+\documentclass[UTF8]{ctexart}
+\begin{document}
+
+你好，LaTeX！这是我的第一个中文文档。
+
+\end{document}
+\end{lstlisting}
+
+再按一次排版按钮。文字变成了宋体，段落开头还自动缩进了两格——这是 \texttt{ctexart}（ctex + article）送的，你没做任何设置。
+
+\textbf{从此记住你的默认姿势}：文档类写 \texttt{ctexart}，引擎选 XeLaTeX。90\% 的场景这两样就够了。
+
+\subsection*{1.6 一定要看懂：报错是怎么回事}
+
+Word 里你永远看不到“报错”，它只会默默把你的文档排得乱七八糟。LaTeX 反过来：\textbf{有错必报，当场罢工}。这是好事——它明着跟你作对，总比背后捅刀强。
+
+点排版按钮后，中间下方会弹出一个\textbf{控制台窗口}，滚过一大堆文字。你不需要全看懂，只需要认识两种信息：
+
+\textbf{\textcircled{\scriptsize 1} 报错（error）}——以感叹号开头，比如：
+
+\begin{lstlisting}
+! LaTeX Error: File `pic.png' not found.
+\end{lstlisting}
+
+看到 \texttt{!} 开头的行，你的文档\textbf{没编出来}，必须处理。读法：先看 \texttt{!} 那一行说了什么（这个例子是“找不到 pic.png 这个文件”），再看下面一行 \texttt{l.数字} 告诉你\textbf{错在第几行}。
+
+\textbf{\textcircled{\scriptsize 2} 警告（warning）}——文档照样生成，但 LaTeX 在唠叨：
+
+\begin{lstlisting}
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+\end{lstlisting}
+
+警告可以暂时不管，但如果你发现目录是空的、引用变成“？?”，十有八九是这条：\textbf{“有引用可能变了，请再编译一遍”}。对，解法就是\textbf{再点一次排版按钮}。LaTeX 修引用靠的是“编译两遍”，这很原始，但很有效。
+
+\textbf{卡住了怎么办？} 控制台停住不动、出现“Please type another command”之类的字眼，说明它在等你回应。此时按\textbf{回车}让它跳过错误，或者干脆点控制台上的红色 \ensuremath{\times} 强行停止，改完代码再来。
+
+\painhead{翻车合集}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{症状} & \textbf{原因} & \textbf{解法} \\
+\midrule
+点了排版没反应 / 报错乱码 & 文件名或路径里有中文、空格 & 文件名改英文，路径也全英文 \\
+中文字全是空白或乱码 & 引擎选成了 pdfLaTeX & 下拉菜单换成 \textbf{XeLaTeX}，重编 \\
+\texttt{! LaTeX Error: Missing \textbackslash{}begin\{document\}} & 在导言区写了正文，或代码里混了中文全角空格 & 检查 \texttt{\textbackslash{}begin\{document\}} 位置；删除看不见的全角空格 \\
+\texttt{! Emergency stop.} 之类看不懂的 & 往上翻找第一个 \texttt{!} 开头的行 & 第一条错误才是真凶，后面的错误常常是连坐 \\
+卡住不动 & 它在等你按回车 / 死循环 & 回车跳过，或红 \ensuremath{\times} 杀进程改代码 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section*{练习}
+
+\begin{enumerate}
+\setlength{\itemsep}{2pt}
+\item 建一个文件夹 \texttt{latex-test}，写出能输出“我叫XXX，这是我用 LaTeX 排的第一个文档”的完整代码，编译出 PDF；
+\item 故意把 \texttt{\textbackslash{}end\{document\}} 删掉再编译，观察报错长什么样（\textbf{这是故意的，习惯错误长什么样}），然后恢复；
+\item 故意选 pdfLaTeX 编译中文文档，看翻车翻成什么样，再换回 XeLaTeX；
+\item 打开控制台，找到“error”和“warning”各一处，截图留给以后对照。
+\end{enumerate}
+
+做完这四道题，你的“翻车经验”已经超过 80\% 的新手了。下一章，我们开始收拾 Word 留下的第一笔血债：\textbf{改一个标题，全文跟着乱}。

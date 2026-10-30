@@ -1,0 +1,240 @@
+\chapter{中文排版设置藏得比迷宫还深}
+
+\begin{notebox}
+本章解决中文论文的“设置迷宫”：行距、缩进、字号、字体——每样在 Word 里都是一场寻宝游戏，在 LaTeX 里是一行命令。
+\end{notebox}
+
+\painhead{烦恼}
+
+“行距 1.5 倍、首行缩进 2 字符、正文宋体小四、标题黑体……导师发来一页格式要求，我在 Word 里翻了五个对话框才找齐。”
+
+\painhead{现象 · 这些场景你肯定见过}
+
+\textbf{场景一}：导师的格式要求清单第一页写着“1.5 倍行距，首行缩进 2 字符”。你在 Word 里翻出“段落”对话框，发现缩进单位是“厘米”不是“字符”，只好去百度“2 字符等于多少厘米”，然后发现不同字号下答案还不一样。
+
+\textbf{场景二}：交稿前发现全文行距不对——你当初只选中了正文设 1.5 倍，标题、图注、参考文献都没设。现在要选中一段设一段，设到一半发现有些段落根本没被选进去。
+
+\textbf{场景三}：中英文混排的段落惨不忍睹：中文用着中文字体，夹在中间的英文单词和数字用的是另一个字体，大小不一、基线不齐；标点符号挤在一起或者散得稀稀拉拉。
+
+这三个场景的病根：\textbf{Word 把中文排版设置拆散在各处的对话框里}，而且默认值是为西文设计的，中文习惯全要自己配。
+
+LaTeX 的解法一句话：\textbf{中文的事，交给 ctex。} 你从第 1 章就开始用的 \texttt{ctexart}，其实早就默默替你把中文习惯的默认值全配好了——本章的任务是：看清它配了什么，再学几条“按导师要求微调”的命令。
+
+\painhead{解决线路}
+
+\subsection*{9.1 ctex 已经替你做好的事：默认项清单}
+
+先盘点你“白嫖”了多久。用 \texttt{ctexart}（或 \texttt{ctexrep}、\texttt{ctexbook}）写中文文档，下面这些是开箱即得的：
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{2}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{默认项} & \textbf{ctex 帮你做的} \\
+\midrule
+首行缩进 & 每段自动缩进\textbf{两字符}（按当前字号算，不是死板的厘米数） \\
+标点处理 & 中文标点自动挤压，行首不会出现句号、逗号 \\
+中英文间距 & 中文和英文单词之间自动留出小空隙，不用手动敲空格 \\
+章节标题 & 标题自动用中文习惯格式（如"第 1 章""1.1"），字体层级分明 \\
+默认字体 & 正文宋体，标题黑体，符合中文论文直觉 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+重点看第一行：\textbf{缩进两字符是按“字符”算的}，字号变大缩进跟着变大——这正是 Word 里“2 字符 vs 厘米”纠结的正解，ctex 直接给了对的。场景一、场景二里的行距和缩进噩梦，源头就是这些默认值。
+
+最小例子（你已经写了八章了，闭着眼都能编）：
+
+\begin{lstlisting}
+\documentclass[UTF8]{ctexart}
+\begin{document}
+
+这是一个段落。它的开头自动缩进了两字符，标点也会被妥善处理，
+中英文混排如 LaTeX 与 Word 之间还有自动的小间距。
+
+这是第二个段落。
+
+\end{document}
+\end{lstlisting}
+
+XeLaTeX 编译，逐条对照上面的清单看效果。
+
+\subsection*{9.2 行距：1.5 倍怎么设}
+
+导师说“1.5 倍行距”，两行代码，放\textbf{导言区}（\texttt{\textbackslash{}begin\{document\}} 之前）：
+
+\begin{lstlisting}
+\usepackage{setspace}
+\onehalfspacing
+\end{lstlisting}
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item \texttt{\textbackslash{}usepackage\{setspace\}}：加载行距工具包；
+\item \texttt{\textbackslash{}onehalfspacing}：全文行距设为 1.5 倍，从这一行开始对\textbf{整个文档}生效——标题、脚注的比例关系它都会兼顾，不会出现“有一段漏设”的情况（场景二就此绝迹）。
+\end{itemize}
+
+同一家族还有两个兄弟：\texttt{\textbackslash{}singlespacing}（单倍，默认）和 \texttt{\textbackslash{}doublespacing}（双倍，少数变态要求用）。英文模板里常见的 \texttt{\textbackslash{}linespread\{1.5\}} 也能干这事，但 setspace 这套更省心，记住这仨就够。
+
+\begin{notebox}
+\textbf{小提示}：行距这种设置一定要放在导言区全文生效，别在正文中间突然来一句——中途改行距是“翻车合集”里的常客。
+\end{notebox}
+
+\subsection*{9.3 字号命令速查：\textbackslash{}zihao 一个命令走天下}
+
+Word 里调字号是选中文字点下拉框；LaTeX 里是 \texttt{\textbackslash{}zihao\{\}} 命令，括号里写中文字号的名称。它有个特色：\textbf{支持“小”字号}——小四、五号、小五这些中文特有的字号，西文命令根本表达不了。
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{你要的字号} & \textbf{命令} & \textbf{大约相当于} \\
+\midrule
+初号 & \texttt{\textbackslash{}zihao\{0\}} & 42pt \\
+小二 & \texttt{\textbackslash{}zihao\{-2\}} & 18pt \\
+三号 & \texttt{\textbackslash{}zihao\{3\}} & 16pt \\
+四号 & \texttt{\textbackslash{}zihao\{4\}} & 14pt \\
+\textbf{小四} & \texttt{\textbackslash{}zihao\{-4\}} & 12pt \\
+五号 & \texttt{\textbackslash{}zihao\{5\}} & 10.5pt \\
+小五 & \texttt{\textbackslash{}zihao\{-5\}} & 9pt \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+规律：数字就是字号，前面加 \texttt{-} 就是“小”字号。导师清单里的“正文小四”，全文设置可以是：
+
+\begin{lstlisting}
+\zihao{-4}
+\end{lstlisting}
+
+同样放导言区。临时局部改也行：\texttt{\{\textbackslash{}zihao\{5\} 这几个字是五号\}}——用花括号圈住作用范围，出了花括号就恢复。
+
+\begin{notebox}
+注意：\texttt{ctexart} 的文档类选项里写 \texttt{12pt}（第 2 章学的）是粗调，\texttt{\textbackslash{}zihao\{-4\}} 是中文语境下的精确调法，论文场景优先用 \texttt{\textbackslash{}zihao}。
+\end{notebox}
+
+\subsection*{9.4 改中文字体：\textbackslash{}setCJKmainfont}
+
+ctex 默认宋体正文、黑体标题，多数学校模板就是这一套，不用动。但如果导师点名“正文用仿宋”或者你想要楷体的引文，用 \texttt{\textbackslash{}setCJKmainfont}（CJK = 中日韩，main = 主字体）：
+
+\begin{lstlisting}
+\usepackage{ctex}
+% ...（导言区其他内容）
+\setCJKmainfont{SimSun}     % 主字体：宋体
+\setCJKfamilyfont{hei}{SimHei}  % 备用字体族：黑体
+\setCJKfamilyfont{kai}{KaiTi}   % 备用字体族：楷体
+\end{lstlisting}
+
+想整段用楷体时：\texttt{\{\textbackslash{}kaishu 这段是楷体\}}；想用黑体：\texttt{\{\textbackslash{}heiti 这段是黑体\}}。（\texttt{\textbackslash{}kaishu}、\texttt{\textbackslash{}heiti} 是 ctex 预先接好的开关，配合 \texttt{\textbackslash{}setCJKfamilyfont} 使用。）
+
+Windows 自带三个最常用的中文字体，英文名记下来：
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{字体} & \textbf{系统英文名} & \textbf{常见用途} \\
+\midrule
+宋体 & \texttt{SimSun} & 正文默认 \\
+黑体 & \texttt{SimHei} & 标题、强调 \\
+楷体 & \texttt{KaiTi} & 引文、图注 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{大坑预警：字体名必须用系统里查到的英文名，不能写“宋体”两个汉字。} 查法：\texttt{C:\textbackslash{}Windows\textbackslash{}Fonts} 里找到字体文件，右键 \ensuremath{\rightarrow} 属性 \ensuremath{\rightarrow} 详细信息，看“文件名”或“标题”（比如 simsun.ttc 对应 \texttt{SimSun}）。写错名字不会立刻报错，编译时会警告“字体找不到”，然后默默用默认字体顶上——排出来的效果不对，你还得回头查，不如一开始就查对。
+
+\subsection*{9.5 段落间距和缩进的默认值：为什么别乱动}
+
+你可能在网上见过各种“深度美化”代码：改 \texttt{\textbackslash{}parskip}（段间距）、改 \texttt{\textbackslash{}parindent}（缩进量）……这里给一句忠告：\textbf{中文论文场景下，ctex 的默认缩进和段间距就是“对的”，别乱动。}
+
+原因很朴素：
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item 缩进两字符、段间不额外加空，这正是中文出版物的规范样式；
+\item 你手动改了缩进，标题、列表、摘要等所有依赖段落参数的地方会连锁变化，牵一发动全身；
+\item 导师说“缩进不对”时，十有八九是某一段被你手敲了全角空格，而不是默认值错了——修复方法是删掉手敲的空格，而不是改全局参数。
+\end{itemize}
+
+需要动它们的合法场景（比如学校模板明确要求“段前段后 0.5 行”）等到第 13 章解剖模板时再说。现阶段：\textbf{默认即真理，忍住别炫技。}
+
+\subsection*{9.6 编译器选择速查表：本书收官用表}
+
+第 1 章说过“写中文选 XeLaTeX”，现在你是全书快完结的人了，值得一张完整的速查表：
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{2}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{你的情况} & \textbf{选哪个引擎} \\
+\midrule
+中文文档（本教材从头到尾的场景） & \textbf{XeLaTeX} \\
+纯英文的老模板（国外期刊、古董模板） & pdfLaTeX \\
+拿不准 & XeLaTeX \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+外加两条铁律：
+
+\begin{enumerate}
+\setlength{\itemsep}{2pt}
+\item \textbf{一篇文档从头到尾只用一种引擎，别混。} 有人第一遍用 XeLaTeX，第二遍顺手点成 pdfLaTeX，轻则引用全部变 “？?”，重则报错罢工。换引擎后请完整重编译（该跑 biber 的重跑 biber）；
+\item 每次点“排版”按钮前，瞄一眼旁边的下拉菜单再点——这个习惯能帮你省掉 90\% 的“昨天还好好的今天怎么全乱了”。
+\end{enumerate}
+
+\painhead{Word 做法 vs LaTeX 做法 · 对照小结}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{事项} & \textbf{Word 做法} & \textbf{LaTeX 做法} \\
+\midrule
+1.5 倍行距 & 段落对话框，还容易漏选段落 & \texttt{\textbackslash{}onehalfspacing} 一行，全文生效 \\
+首行缩进 2 字符 & 百度"2 字符 = 几厘米" & ctex 默认就是，零操作 \\
+中文字号 & 下拉框选"小四" & \texttt{\textbackslash{}zihao\{-4\}} \\
+改中文字体 & 全选 \ensuremath{\rightarrow} 字体框（标题还得单独改） & \texttt{\textbackslash{}setCJKmainfont\{...\}} 一行 \\
+中文与英文间距 & 手动敲空格，多了少了都不对 & 自动处理 \\
+编译/保存引擎设置 & 无此概念 & 下拉菜单定死，一篇一引擎 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\painhead{翻车合集}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{症状} & \textbf{原因} & \textbf{解法} \\
+\midrule
+编译警告找不到字体，效果不对 & \texttt{\textbackslash{}setCJKmainfont} 里写了中文"宋体"或错误名称 & 去字体目录查英文名（\texttt{SimSun} 等） \\
+行距设了没变化 & \texttt{\textbackslash{}onehalfspacing} 写到了正文里，或忘了加载 \texttt{setspace} & 移到导言区，确认 \texttt{\textbackslash{}usepackage\{setspace\}} \\
+编号、引用全变 "？?" & 中途换了引擎（XeLaTeX \ensuremath{\leftrightarrow} pdfLaTeX 混用） & 换回原引擎，完整重编译 \\
+某一段顶格没缩进 & 段首手敲了全角空格，或段前有空行后又敲了空格 & 删掉手敲的空格，缩进是自动的 \\
+\texttt{\textbackslash{}zihao\{-4\}} 改了字号但标题没跟着变 & 正常，标题字号由文档类层级管着 & 标题字号等模板需求来了再说（第 13 章） \\
+想让某段不缩进（如摘要标题下） & ctex 默认全缩进 & 用 \texttt{\textbackslash{}noindent} 命令放在段首 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section*{练习}
+
+\begin{enumerate}
+\setlength{\itemsep}{2pt}
+\item 写一份三段的小短文，导言区加上 1.5 倍行距和 \texttt{\textbackslash{}zihao\{-4\}}，XeLaTeX 编译，确认全文行距、字号、缩进都符合“导师审美”；
+\item 把正文中某一段用 \texttt{\{\textbackslash{}kaishu ...\}} 变成楷体，再用 \texttt{\{\textbackslash{}heiti ...\}} 试黑体，观察效果后删掉；
+\item 给文档加上 \texttt{\textbackslash{}setCJKmainfont\{SimHei\}}，编译看看“全文黑体”的效果（很快你就会明白为什么没人这么排正文），然后删掉恢复宋体；
+\item 用第 9.6 节的速查表检查你前面几章的所有练习文件：引擎是否统一、有没有混用过两种引擎；
+\item \textbf{故意翻车题}：把 \texttt{\textbackslash{}setCJKmainfont\{SimSun\}} 故意写成 \texttt{\textbackslash{}setCJKmainfont\{SongTi\}}（一个不存在的名字），编译并观察控制台的字体警告和 PDF 的实际效果——记住“没报错但效果不对”也是病，病根在警告里。
+\end{enumerate}
+
+中文排版的迷宫到此走完：ctex 把默认值都配对了，你只需要在导言区按导师要求微调几行。下一章进入长文档的最后一块拼图：\textbf{页码要从正文才开始编，前面还得是罗马数字}——别怕，两条命令的事。

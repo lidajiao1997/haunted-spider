@@ -1,0 +1,286 @@
+\chapter{Word 的公式编辑器，是反人类设计}
+
+\begin{notebox}
+本章解决中篇的第一笔血债：公式。学完这章你会发现，公式不是“编辑”出来的，是\textbf{打}出来的。
+\end{notebox}
+
+\painhead{烦恼}
+
+“在 Word 里插个公式，鼠标点了十几次菜单，公式还是歪的。”
+
+\painhead{现象 · 这些场景你肯定见过}
+
+\textbf{场景一}：数学建模论文要写多行推导，你在 Word 的公式编辑器里插一行、回车、再插一行……对齐全靠敲空格，敲完一看，等号一排歪得像心电图。
+
+\textbf{场景二}：想输入一个矩阵，在公式编辑器里点“矩阵”按钮，选规格、填数字、调括号，折腾半天出来一个括号大小不匹配的玩意儿。组会前一晚，你对着 Matrix 菜单怀疑人生。
+
+\textbf{场景三}：公式插在正文中间，行距突然被撑大了，前后的段落一宽一窄。调行距？那又是另一个下午。
+
+病根还是那个：Word 里公式是“点”出来的对象，你要用鼠标在菜单里翻找每个符号。LaTeX 的解法一句话：\textbf{公式就是打字。符号都有对应的代码，手不离键盘，公式自己排整齐。}
+
+\painhead{解决线路}
+
+\subsection*{6.1 先跑起来：行内公式和行间公式}
+
+新建文件，敲进去，引擎选 XeLaTeX，点绿色“排版”按钮：
+
+\begin{lstlisting}
+\documentclass[UTF8]{ctexart}
+\usepackage{amsmath}
+\begin{document}
+
+著名的勾股定理 $a^2 + b^2 = c^2$ 写在行内，不破坏行距。
+
+ 单独一行的重要公式这样写：
+ \[ e^{i\pi} + 1 = 0 \]
+
+\end{document}
+\end{lstlisting}
+
+\textbf{逐行拆解}：
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item \texttt{\textbackslash{}usepackage\{amsmath\}}：公式功能的“标配包”，写在导言区。\textbf{以后写任何带公式的文档，第一件事就是加这一行}，不加的话后面一大半命令都会报错；
+\item \texttt{\$...\$}：\textbf{行内公式}，夹在正文里的小公式，前后各一个美元符号包住。美元符号就像公式结界，结界里是数学世界，结界外是文字世界；
+\item \texttt{\textbackslash{}[...\textbackslash{}]}：\textbf{行间公式}，独占一行、居中显示，用于重要公式。
+\end{itemize}
+
+记住本章第一句金句：\textbf{公式就是打字，不需要鼠标。}
+
+\subsection*{6.2 上下标、分数、根号}
+
+数学公式的三大件：
+
+\begin{lstlisting}
+$a^2$          % 上标：a 的平方
+$a_i$          % 下标：第 i 个 a
+$a_{i+1}^2$    % 上下标一起来
+$\frac{a}{b}$  % 分数：b 分之 a
+$\sqrt{x}$     % 根号
+$\sqrt[3]{x}$  % 三次根号
+\end{lstlisting}
+
+\textbf{三条规则}：
+
+\begin{enumerate}
+\setlength{\itemsep}{2pt}
+\item \texttt{\textasciicircum{}} 管上标，\texttt{\_} 管下标，它们只作用于\textbf{紧跟的一个字符}。想让 \texttt{i+1} 整体当下标，必须用花括号包住：\texttt{a\_\{i+1\}}。写成 \texttt{a\_i+1} 会变成“a 下标 i，再加 1”——新手第一大公式翻车；
+\item 分数用 \texttt{\textbackslash{}frac\{分子\}\{分母\}}，上下两个花括号各管一头；
+\item 根号里的内容也用花括号包住。
+\end{enumerate}
+
+\subsection*{6.3 要编号的公式：equation 环境}
+
+毕业论文里“式 (3.1)”这种编号，LaTeX 自动给你：
+
+\begin{lstlisting}
+\begin{equation}
+  E = mc^2
+\end{equation}
+\end{lstlisting}
+
+编译出来，公式居中，右边自动挂着编号 (1)。想引用它？在第 5 章学的 \texttt{\textbackslash{}label} + \texttt{\textbackslash{}eqref} 直接用：
+
+\begin{lstlisting}
+\begin{equation}
+  E = mc^2
+  \label{eq:energy}
+\end{equation}
+
+由式 \eqref{eq:energy} 可知……
+\end{lstlisting}
+
+编号是活的，前面加减公式它自己重排——又是 \texttt{\textbackslash{}ref} 家族的功劳。
+
+\subsection*{6.4 求和、积分、极限：注意上下标的位置}
+
+\begin{lstlisting}
+$\sum_{i=1}^{n} a_i$        % 求和
+$\int_0^1 f(x)\,dx$         % 定积分
+$\lim_{x \to 0} \frac{\sin x}{x} = 1$  % 极限
+\end{lstlisting}
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item \texttt{\textbackslash{}sum}、\texttt{\textbackslash{}int}、\texttt{\textbackslash{}lim} 后面跟 \texttt{\_} 和 \texttt{\textasciicircum{}}，就自动把上下限摆到正确位置；
+\item 注意一个细节：行内公式里 \texttt{\textbackslash{}sum} 的上下限会跑到\textbf{右边}（\texttt{\ensuremath{\sum}i=1n} 的样子），行间公式里才会在正上方——这是数学排版的规范行为，不是 bug；
+\item \texttt{f(x)\textbackslash{},dx} 里的 \texttt{\textbackslash{},} 是一个小空隙，让 dx 别贴着 f(x)，老手的强迫症礼仪。
+\end{itemize}
+
+\subsection*{6.5 多行推导：align 环境，按 \& 对齐}
+
+Word 里最痛的多行推导，LaTeX 用 \texttt{align} 环境：
+
+\begin{lstlisting}
+\begin{align}
+  (a+b)^2 &= (a+b)(a+b) \\
+          &= a^2 + ab + ba + b^2 \\
+          &= a^2 + 2ab + b^2
+\end{align}
+\end{lstlisting}
+
+\textbf{三条规则}：
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item \texttt{\&} 是\textbf{对齐锚点}：每行在 \texttt{\&} 处对齐，所以每行的 \texttt{\&} 都放在等号前——所有等号整齐排成一列；
+\item \texttt{\textbackslash{}\textbackslash{}} 是\textbf{换行}：一行推导写完，\texttt{\textbackslash{}\textbackslash{}} 换下一行。注意最后一句金句：\textbf{\texttt{\&} 管对齐，\texttt{\textbackslash{}\textbackslash{}} 管换行}；
+\item \texttt{align} 环境默认每行都编号。哪行不想要编号，在那行末尾加 \texttt{\textbackslash{}nonumber}：
+\end{itemize}
+
+\begin{lstlisting}
+\begin{align}
+  y &= f(x) \nonumber \\
+    &= x^2 + 1
+\end{align}
+\end{lstlisting}
+
+\subsection*{6.6 矩阵和分段函数}
+
+矩阵（记得外面套 \texttt{\textbackslash{}[} 或 equation）：
+
+\begin{lstlisting}
+\[ A = \begin{pmatrix}
+  1 & 2 \\
+  3 & 4
+\end{pmatrix} \]
+\end{lstlisting}
+
+\texttt{pmatrix} 是带圆括号的矩阵，\texttt{bmatrix} 是方括号版本。里面的 \texttt{\&} 分列、\texttt{\textbackslash{}\textbackslash{}} 分行——和 align 是同一套逻辑，学会一次到处用。
+
+分段函数用 \texttt{cases}：
+
+\begin{lstlisting}
+\[ f(x) = \begin{cases}
+  x^2,       & x \geq 0 \\
+  -x^2,      & x < 0
+\end{cases} \]
+\end{lstlisting}
+
+大括号自动生成，每段一个 \texttt{\&} 隔开条件和表达式。
+
+\subsection*{6.7 公式里想写中文/文字：\textbackslash{}text\{\}}
+
+直接在公式里打汉字会出乱码或挤成一团，要包进 \texttt{\textbackslash{}text\{\}}：
+
+\begin{lstlisting}
+\[ x_{\text{平均}} = \frac{x_1 + x_2}{2} \]
+\[ \text{当 } x > 0 \text{ 时} \]
+\end{lstlisting}
+
+下标“平均”两个字必须用 \texttt{\textbackslash{}text\{平均\}}，否则 LaTeX 会把每个汉字当成三个变量相乘（字母斜着、间距诡异）。
+
+\subsection*{6.8 符号速查与“画图认符号”神器}
+
+常用的记号，一小张表存着备用：
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{4}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{记号} & \textbf{命令} & \textbf{记号} & \textbf{命令} \\
+\midrule
+\ensuremath{\alpha} & \texttt{\textbackslash{}alpha} & \ensuremath{\beta} & \texttt{\textbackslash{}beta} \\
+\ensuremath{\gamma} & \texttt{\textbackslash{}gamma} & \ensuremath{\delta} & \texttt{\textbackslash{}delta} \\
+\ensuremath{\theta} & \texttt{\textbackslash{}theta} & \ensuremath{\lambda} & \texttt{\textbackslash{}lambda} \\
+\ensuremath{\mu} & \texttt{\textbackslash{}mu} & \ensuremath{\sigma} & \texttt{\textbackslash{}sigma} \\
+\ensuremath{\varphi} & \texttt{\textbackslash{}phi} / \texttt{\textbackslash{}varphi} & \ensuremath{\omega} & \texttt{\textbackslash{}omega} \\
+\ensuremath{\Gamma} \ensuremath{\Delta} \ensuremath{\Theta} \ensuremath{\Lambda} \ensuremath{\Sigma} & \texttt{\textbackslash{}Gamma} \texttt{\textbackslash{}Delta} 等（首字母大写） &  &  \\
+\ensuremath{\leq} \ensuremath{\geq} \ensuremath{\neq} & \texttt{\textbackslash{}leq} \texttt{\textbackslash{}geq} \texttt{\textbackslash{}neq} & \ensuremath{\approx} \ensuremath{\pm} \ensuremath{\times} & \texttt{\textbackslash{}approx} \texttt{\textbackslash{}pm} \texttt{\textbackslash{}times} \\
+\ensuremath{\infty} \ensuremath{\in} \ensuremath{\cup} \ensuremath{\cap} & \texttt{\textbackslash{}infty} \texttt{\textbackslash{}in} \texttt{\textbackslash{}cup} \texttt{\textbackslash{}cap} & \ensuremath{\subset} \ensuremath{\subseteq} & \texttt{\textbackslash{}subset} \texttt{\textbackslash{}subseteq} \\
+R（实数集） & \texttt{\textbackslash{}mathbb\{R\}} & 花体字母 & \texttt{\textbackslash{}mathcal\{F\}} \\
+箭头 & \texttt{\textbackslash{}rightarrow} \texttt{\textbackslash{}Rightarrow} \texttt{\textbackslash{}leftrightarrow} & 省略号 & \texttt{\textbackslash{}cdots} \texttt{\textbackslash{}ldots} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+希腊字母命令就是读音的拼音，\texttt{\textbackslash{}alpha}、\texttt{\textbackslash{}beta} 打两遍就背下来了。
+
+那不常用的符号怎么办？记住神器 \textbf{Detexify}：浏览器搜“detexify”进它的网站——\textbf{用鼠标画出那个符号的样子}，它就猜出命令。比如你画一个波浪里的 Z，它告诉你 \texttt{\textbackslash{}aleph}。这是 LaTeX 用户的公共救生圈。
+
+\subsection*{6.9 定理环境：amsthm 够用版}
+
+论文里“\textbf{定理 1}”“\textbf{定义 2}”这种格式，用 \texttt{amsthm} 包：
+
+\begin{lstlisting}
+\documentclass[UTF8]{ctexart}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\newtheorem{theorem}{定理}
+\newtheorem{definition}{定义}
+\newtheorem{lemma}{引理}
+
+\begin{document}
+
+\begin{theorem}
+若 $f$ 在闭区间 $[a,b]$ 上连续，则 $f$ 在 $[a,b]$ 上有界。
+\end{theorem}
+
+\begin{definition}
+称数列 $\{a_n\}$ 收敛，若……
+\end{definition}
+
+\end{document}
+\end{lstlisting}
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item 导言区 \texttt{\textbackslash{}newtheorem\{环境名\}\{显示名\}} 声明一次，正文里 \texttt{\textbackslash{}begin\{定理环境名\}} 使用；
+\item 编号自动递增，字体自动斜体强调（中文环境配合 ctex 显示正常），“定理 1”“定义 1”不用你手打。
+\end{itemize}
+
+到这里，你论文里 95\% 的公式需求已经全部覆盖。
+
+\painhead{Word 做法 vs LaTeX 做法 · 对照小结}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{事项} & \textbf{Word 做法} & \textbf{LaTeX 做法} \\
+\midrule
+输入一个符号 & 鼠标点公式工具栏，翻菜单 & 打对应命令，手不离键盘 \\
+上下标 & 点按钮切换上下标模式 & \texttt{\textasciicircum{}} 和 \texttt{\_} 直接打 \\
+分数 & 点"分数"选样式再填格子 & \texttt{\textbackslash{}frac\{a\}\{b\}} \\
+重要公式编号 & 手动敲 (1) (2) (3)，增删全重排 & \texttt{equation} 自动编号 \\
+多行推导对齐 & 空格硬凑，一歪全歪 & \texttt{align} + \texttt{\&} 自动对齐 \\
+矩阵 & 矩阵菜单填格子游戏 & \texttt{\textbackslash{}begin\{pmatrix\}} + \texttt{\&} 和 \texttt{\textbackslash{}\textbackslash{}} \\
+定理环境 & 手动加粗"定理 1"再手打编号 & \texttt{\textbackslash{}newtheorem} 声明一次自动编号 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\painhead{翻车合集}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{症状} & \textbf{原因} & \textbf{解法} \\
+\midrule
+\texttt{! Missing \$ inserted.} & 在公式结界外用了数学符号，或忘了闭合 \texttt{\$} & 检查 \texttt{\$} 是否成对；裸露的 \texttt{\_}、\texttt{\textasciicircum{}} 要包进公式 \\
+\texttt{! Missing \} inserted.} & 花括号没配对（\texttt{\textbackslash{}frac\{a\}\{b} 这种） & 从报错行号开始数花括号，补齐 \\
+下标 \texttt{i+1} 只把 i 变小了 & \texttt{\textasciicircum{}}/\texttt{\_} 只管一个字符 & 多字符用花括号：\texttt{a\_\{i+1\}} \\
+\texttt{! Environment align undefined} & 忘了 \texttt{\textbackslash{}usepackage\{amsmath\}} & 导言区加上，重新排版 \\
+编译出一堆奇怪斜体汉字 & 公式里直接写了中文 & 中文包进 \texttt{\textbackslash{}text\{\}} \\
+公式里想空一格没反应 & LaTeX 忽略公式中的普通空格 & 用 \texttt{\textbackslash{},}（小）\texttt{\textbackslash{};}（中）\texttt{\textbackslash{}quad}（大） \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section*{练习}
+
+\begin{enumerate}
+\setlength{\itemsep}{2pt}
+\item 排出下面的行间公式（提示：\texttt{\textbackslash{}frac} + \texttt{\textbackslash{}int}）： \textbackslash{}[ \textbackslash{}int\_0\textasciicircum{}\{+\textbackslash{}infty\} e\textasciicircum{}\{-x\textasciicircum{}2\}\textbackslash{},dx = \textbackslash{}frac\{\textbackslash{}sqrt\{\textbackslash{}pi\}\}\{2\} \textbackslash{}]
+\item 用 \texttt{align} 排一个三行的推导，第一行末尾加 \texttt{\textbackslash{}nonumber}，观察哪行有编号；
+\item 用 \texttt{pmatrix} 排一个 3\ensuremath{\times}3 的单位矩阵；
+\item 用 \texttt{\textbackslash{}newtheorem} 同时声明“定理”和“例”，各写一条，检查编号是否独立计数；
+\item \textbf{故意翻车题}：把 \texttt{\textbackslash{}frac\{a\}\{b\}} 的第二个花括号删掉再排版，找到控制台里第一条 \texttt{!} 开头的报错行和它下面的 \texttt{l.行号}，看清楚“括号不配对”报错长什么样——以后你在几百行文档里能一眼认出它。
+\end{enumerate}
+
+公式这道坎过了，你的论文已经能“写”了。下一章收拾零件清单的下一项：\textbf{表格}——那个在 Word 里调半小时竖线还对不齐的三线表，在 LaTeX 里其实只要三条命令。

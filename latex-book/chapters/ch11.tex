@@ -1,0 +1,219 @@
+\chapter{多人合稿，交上来的文档格式五花八门}
+
+\begin{notebox}
+本章解决合稿时代的头号灾难：四个人的文档，四种格式。解法是——格式集中管理。
+\end{notebox}
+
+\painhead{烦恼}
+
+"小组作业五个人各写一章，交上来一看：标题字号三种、'马尔可夫链'拼法两套、学校名一个写'某某大学'一个写'某大学'。合并完我改了一下午格式，导师说'符号统一一下'，我又改了一下午。"
+
+\painhead{现象 · 这些场景你肯定见过}
+
+\textbf{场景一}：大创结题报告，五个人各写各的。A 组长的“研究背景”是一级标题居中，B 组员的是左对齐加粗；C 直接用正文加粗冒号冒充标题。合并文档的那个下午，你贡献给了格式刷。
+
+\textbf{场景二}：全文有个术语“GAN（生成对抗网络）”，你在文档里搜了一遍统一了写法。两周后新增两章，新队友写的是“生成对抗网络（GAN）”——顺序还反了。你又搜了一遍。
+
+\textbf{场景三}：导师发话：“学校名以后都写'某某大学'，别用简称。”你 Ctrl+H 替换，结果把参考文献里的英文校名也替换坏了，一处一处手动修。
+
+这些事的共同病根：\textbf{同一段信息（格式、术语、符号）散落在文档的各个角落}。改一处要找到所有地方。LaTeX 的解法一句话：\textbf{把这些东西集中定义，正文里只管引用，改一处全局生效。}
+
+\painhead{解决线路}
+
+\subsection*{11.1 最小例子：定义你自己的命令}
+
+\texttt{ctexart} 文档，XeLaTeX 编译：
+
+\begin{lstlisting}
+\documentclass[UTF8]{ctexart}
+
+\newcommand{\school}{某某大学}
+\newcommand{\gan}{生成对抗网络（GAN）}
+
+\begin{document}
+
+本文由\school{} 大学生创新团队完成。
+
+我们使用\gan{} 完成了图像生成任务。\gan{} 的训练需要大量数据。
+
+\end{document}
+\end{lstlisting}
+
+编译出来的正文里，所有 \texttt{\textbackslash{}school} 都显示“某某大学”，所有 \texttt{\textbackslash{}gan} 都显示“生成对抗网络（GAN）”。现在导师说校名改成“某某理工大学”？你只改 \texttt{\textbackslash{}newcommand} 那一行，全文一键生效。
+
+\textbf{逐行拆解}：
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item \texttt{\textbackslash{}newcommand\{\textbackslash{}school\}\{某某大学\}}：定义一个新命令 \texttt{\textbackslash{}school}，它代表“某某大学”这几个字。定义必须放在\textbf{导言区}（\texttt{\textbackslash{}begin\{document\}} 之前）；
+\item 正文里写 \texttt{\textbackslash{}school\{\}}：后面跟个空花括号是为了“断开”——防止 LaTeX 把 \texttt{\textbackslash{}school} 和紧跟的字母连成一个长命令名。后面跟的是标点或空格时，花括号可省，但\textbf{养成写 \texttt{\{\}} 的习惯最保险}；
+\item \texttt{\textbackslash{}gan} 同理。注意一个细节：正文里“\textbackslash{}gan\{\} 的训练”这种写法很自然——命令后面的空格不会被排进去，中文排版不受影响。
+\end{itemize}
+
+\textbf{体会一下这个感觉}：这跟第 2 章的“格式集中管理”是同一个思想，只是这次管理的不只是格式，还有\textbf{内容里反复出现的片段}。
+
+\subsection*{11.2 带参数的命令：一个模板，处处套用}
+
+命令还能“接收信息”。例子：
+
+\begin{lstlisting}
+\newcommand{\kaoyan}[1]{考研考了 #1 分}
+
+正文里写：小张\kaoyan{385}，小李\kaoyan{402}。
+\end{lstlisting}
+
+输出是“小张考研考了 385 分，小李考研考了 402 分”。
+
+拆解：
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item \texttt{[1]}：声明这个命令\textbf{接收 1 个参数}；
+\item \texttt{\#1}：参数的占位符，用命令时写在花括号里的内容会填到 \texttt{\#1} 的位置。
+\end{itemize}
+
+实战价值在哪？比如全组统一的术语格式——英文缩写首次出现要“中文（英文全称，缩写）”：
+
+\begin{lstlisting}
+\newcommand{\term}[2]{#1（#2）}
+
+正文里写：\term{生成对抗网络}{Generative Adversarial Networks}
+\end{lstlisting}
+
+如果哪天学校模板改成要求“中文（缩写）”，你只改 \texttt{\textbackslash{}newcommand} 那一行的花括号内容，全文几百处术语一起变。这要是手改，又是一下午。
+
+还可以有\textbf{可选参数}，写法是：\texttt{\textbackslash{}newcommand\{\textbackslash{}baokao\}[2][985]\{\#2 报考了 \#1 学校\}}——\texttt{[2]} 表示共两个参数，紧跟的 \texttt{[985]} 表示第一个参数的默认值。用法：\texttt{\textbackslash{}baokao\{小张\}} 第一个参数自动用 985，输出“小张报考了 985 学校”；\texttt{\textbackslash{}baokao[211]\{小李\}} 自己指定，输出“小李报考了 211 学校”。入门阶段知道有这回事就行，真用到再回来抄。
+
+\subsection*{11.3 \textbackslash{}renewcommand：改官方的默认值}
+
+\texttt{\textbackslash{}newcommand} 只能造新命令；想改 LaTeX 已有命令的行为，用 \texttt{\textbackslash{}renewcommand}。比如前面第 10 章提过的页眉高度，或者改目录深度：
+
+\begin{lstlisting}
+\renewcommand{\contentsname}{目\quad 录}
+\end{lstlisting}
+
+入门阶段对它的定位是：\textbf{看到模板里有人这么写，知道它是“覆盖官方默认”即可}，自己暂时少用。
+
+\subsection*{11.4 自定义环境：一个“批注框”}
+
+命令管“一段文字”，环境管“一整块区域”。第 4 章你用过 \texttt{figure} 环境对吧？环境也能自己造。比如小组互审时，想给队友的稿子插“批注框”：
+
+\begin{lstlisting}
+\documentclass[UTF8]{ctexart}
+\usepackage{xcolor}
+
+\newenvironment{note}
+  {\par\noindent\textbf{【批注】}}
+  {\par}
+
+\begin{document}
+
+第三章写完了，请大家帮忙看看。
+
+\begin{note}
+小王：这里的图建议换成矢量图，PDF 里放大不糊。
+\end{note}
+
+\begin{note}
+小刘：这句引用缺页码，记得补上。
+\end{note}
+
+\end{document}
+\end{lstlisting}
+
+编译后，两段批注都自动带上加粗的“【批注】”开头。以后你想给批注加背景色、加边框，只改 \texttt{\textbackslash{}newenvironment} 那三行，所有批注框一起变。
+
+\textbf{拆解}：\texttt{\textbackslash{}newenvironment\{名字\}\{开头干什么\}\{结尾干什么\}}——“开头干什么”在 \texttt{\textbackslash{}begin\{note\}} 时执行，“结尾干什么”在 \texttt{\textbackslash{}end\{note\}} 时执行。这里开头就是“另起一段 + 打出【批注】标签”，结尾是“再换段”。想给批注加个醒目颜色？把开头的部分改成 \texttt{\{\textbackslash{}par\textbackslash{}noindent\textbackslash{}color\{red\}\textbackslash{}textbf\{【批注】\}\}} 就行（\texttt{xcolor} 已在导言区加载）。
+
+再来个“答题卡”风格的例子，环境开头画一条分隔线（\texttt{\textbackslash{}hrulefill} 是“填满整行的横线”）：
+
+\begin{lstlisting}
+\newenvironment{answer}
+  {\par\noindent\hrulefill\par\textbf{答：}}
+  {\par}
+\end{lstlisting}
+
+\subsection*{11.5 什么时候自己造，什么时候找现成的？}
+
+判断标准就一条：\textbf{这功能是不是别人早就需要过？}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{2}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{想做的事} & \textbf{建议} \\
+\midrule
+全文统一术语、校名、符号 & \texttt{\textbackslash{}newcommand}，本章的内容 \\
+统一一个重复出现的小版式（批注框、答题卡） & \texttt{\textbackslash{}newenvironment}，本章的内容 \\
+三线表、跨页长表、参考文献国标、超链接 & \textbf{找宏包}，第 7、8 章干过这事 \\
+拿不准 & 先搜"LaTeX + 你要的效果"，有宏包就别造轮子 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+自己造轮子的边界：命令套命令超过两层、环境里塞了十几个参数，说明这个需求该找宏包或者找学长了。
+
+\subsection*{11.6 重名冲突：\textbackslash{}newcommand 报错了怎么办}
+
+\texttt{\textbackslash{}newcommand} 很讲究：\textbf{如果命令名已经存在，它直接报错罢工}，比如你想定义 \texttt{\textbackslash{}section} 或 \texttt{\textbackslash{}textbf} 的山寨版，控制台会给你一条 \texttt{! LaTeX Error: Command \textbackslash{}xxx already defined.}
+
+看到这条报错，三选一：
+
+\begin{enumerate}
+\setlength{\itemsep}{2pt}
+\item \textbf{换个名字}（推荐）：\texttt{\textbackslash{}school} 重了就改 \texttt{\textbackslash{}mySchool}。名字前面加个自己团队的前缀是好习惯，比如 \texttt{\textbackslash{}teamSchool}、\texttt{\textbackslash{}teamTerm}；
+\item 确认你是故意的 \ensuremath{\rightarrow} 改用 \texttt{\textbackslash{}renewcommand}（覆盖旧定义）；
+\item 用 \texttt{\textbackslash{}providecommand}：已存在就不定义、不存在才定义——“有则罢，无则造”。合稿时两人各定义了同名命令，用它能让文档编过去，但\textbf{先确认俩人的定义内容是不是一样的}，不然输出会悄悄用先定义的那个。
+\end{enumerate}
+
+\textbf{口语化金句}：\texttt{\textbackslash{}newcommand} 是“造新词”，\texttt{\textbackslash{}renewcommand} 是“改旧词”——改旧词前先想想谁还在用这个词。
+
+\painhead{Word 做法 vs LaTeX 做法 · 对照小结}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{事项} & \textbf{Word 做法} & \textbf{LaTeX 做法} \\
+\midrule
+全文统一术语写法 & Ctrl+H 全文替换，祈祷没误伤 & \texttt{\textbackslash{}newcommand} 定义一次，正文引用 \\
+换校名/机构名 & 再替换一遍，误伤再修 & 改定义那一行，全局生效 \\
+统一一个小版式 & 格式刷 + 样式表（多数人只会格式刷） & \texttt{\textbackslash{}newenvironment} 定义环境 \\
+合稿格式不一 & 人工对齐，格式刷刷到死 & 格式定义都在导言区，谁的规矩一望便知 \\
+命令重名 & （Word 没这概念） & LaTeX 报错拦住你，换名或 \texttt{\textbackslash{}renewcommand} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\painhead{翻车合集}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{症状} & \textbf{原因} & \textbf{解法} \\
+\midrule
+\texttt{! LaTeX Error: Command \textbackslash{}school already defined.} & 命令名跟已有的重了（可能是 LaTeX 自带，可能是宏包定义的） & 换个名字；确要覆盖用 \texttt{\textbackslash{}renewcommand} \\
+命令后面紧跟的英文单词被"吃"进命令名 & \texttt{\textbackslash{}school} 后面没断开，\texttt{\textbackslash{}schoolname} 被当成一个命令 & 命令后加空花括号：\texttt{\textbackslash{}school\{\}} \\
+\texttt{! Undefined control sequence.} 提到你自己定义的命令 & 定义写在了 \texttt{\textbackslash{}begin\{document\}} 之后，或定义行有拼写不一致 & 自定义命令统一放导言区；核对名字拼写 \\
+正文里命令不生效、原样显示 & 花括号没闭合，或 \texttt{\textbackslash{}newcommand} 少写了参数个数 & 检查 \texttt{\{\}} 是否成对、\texttt{[1]} 是否写上 \\
+环境结尾部分没执行 & 忘了写 \texttt{\textbackslash{}end\{note\}}，或自定义环境开头/结尾的两组花括号没配平 & 补 \texttt{\textbackslash{}end\{\}}，数清三组花括号 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section*{练习}
+
+\begin{enumerate}
+\setlength{\itemsep}{2pt}
+\item 定义命令 \texttt{\textbackslash{}univ} 输出你的学校全名，写三段正文各引用一次；然后“导师改校名”，只改定义行重新编译；
+\item 定义带一个参数的命令 \texttt{\textbackslash{}score}，输出“本科绩点 \#1 / 4.0”，用它写三个人的成绩；
+\item 仿照本章例子做一个“伪代码提示”环境 \texttt{draft}：开头显示“【待补充】”，给你写到一半的段落用上；
+\item \textbf{故意翻车题}：在导言区写 \texttt{\textbackslash{}newcommand\{\textbackslash{}section\}\{这是我的章节\}} 再编译，看控制台的 \texttt{already defined} 报错长什么样；把命令改名为 \texttt{\textbackslash{}mySection} 恢复正常；
+\item 合稿演习：让队友（或者假装是队友的你）在文档里定义一个和你的 \texttt{\textbackslash{}school} 重名的命令，用 \texttt{\textbackslash{}providecommand} 让文档编过去，观察生效的是哪一个定义。
+\end{enumerate}
+
+现在全组的格式都握在你手里的导言区了。但还有个现实问题：一百多页的毕业论文还挤在一个文件里，翻代码翻到眼花，改一处编译等半天。下一章，把文档\textbf{拆成多个文件}，让 LaTeX 项目像模像样。

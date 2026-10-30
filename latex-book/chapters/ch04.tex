@@ -1,0 +1,220 @@
+\chapter{图一插进来，后面的字全飞了}
+
+\begin{notebox}
+本章解决插图问题：把图交给 LaTeX 管，你只管说“这是图”。
+\end{notebox}
+
+\painhead{烦恼}
+
+“在 Word 里插了张图，后面的正文直接被顶到下一页去，怎么拽都拽不回来。”
+
+\painhead{现象 · 这些场景你肯定见过}
+
+\textbf{场景一}：正文写到一半插入一张图，图刚好卡在页尾，放不下，于是整张图被推到下一页，原图位置留下一大片空白。你试着拖动图片，结果后面的段落像多米诺骨牌一样全乱了。
+
+\textbf{场景二}：你把图片改成“四周环绕”，文字倒是绕过去了，但绕得莫名其妙——有一段文字被挤成细细一条贴着图边，还有一行字直接叠在图上。
+
+\textbf{场景三}：导师要求“图 3 和图 4 并排放，下面共用一个标题”。你在 Word 里搞了一个两列表格把图装进去，表格边框消不掉，两个图注字号还不一样。
+
+这三个场景的病根是同一个：\textbf{你在 Word 里亲手安排每张图的位置}。图是你插的，位置是你拖的，乱自然也是你收拾的。
+
+LaTeX 的思路反过来：\textbf{你不指定图在哪一页哪一行，你只声明“这里有一张图”，它自己找不碍事的地方放。}
+
+\painhead{解决线路}
+
+\subsection*{4.1 三件套：graphicx + figure + \textbackslash{}caption}
+
+先解决“图从哪来”。图片放在和 \texttt{.tex} 文件同一个文件夹里，比如一张叫 \texttt{result.png} 的实验结果图。然后敲进完整代码：
+
+\begin{lstlisting}
+\documentclass[UTF8, 12pt]{ctexart}
+\usepackage{graphicx}
+\begin{document}
+
+实验结果如图~\ref{fig:result} 所示，效果拔群。
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\textwidth]{result.png}
+  \caption{实验结果对比图}
+  \label{fig:result}
+\end{figure}
+
+\end{document}
+\end{lstlisting}
+
+编译（图片不存在会报错 \texttt{File 'result.png' not found}——随便放张图进去再编）。图出现在正文里，下方自动带“图 1：实验结果对比图”。
+
+\textbf{逐行拆解}：
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item \texttt{\textbackslash{}usepackage\{graphicx\}}：插图功能的开关，写在导言区。LaTeX 本体不带插图，要靠\textbf{宏包}加载（类比 Word 的“加载项”，但免费且不弹窗）；
+\item \texttt{\textbackslash{}begin\{figure\}[htbp] ... \textbackslash{}end\{figure\}}：\textbf{figure 环境}，把一张图“打包”起来管理。方括号里的 \texttt{htbp} 是位置偏好，下一节细说；
+\item \texttt{\textbackslash{}centering}：图在页面里居中。写 figure 环境九成九都要这一行，当成固定搭配背下来；
+\item \texttt{\textbackslash{}includegraphics[width=0.8\textbackslash{}textwidth]\{result.png\}}：真正插图的命令。方括号是\textbf{缩放设置}，\texttt{width=0.8\textbackslash{}textwidth} 意思是“宽度设为版心宽度的 80\%”——用比例而不是像素，怎么换文档都不会撑爆页面；
+\item \texttt{\textbackslash{}caption\{实验结果对比图\}}：\textbf{图注}。它自动编号（图 1、图 2……），且自动写进“图表目录”的账本；
+\item \texttt{\textbackslash{}label\{fig:result\}}：给图起个内部代号，供正文引用，下一章细讲。
+\end{itemize}
+
+这一套就是\textbf{插图三件套}：\texttt{\textbackslash{}includegraphics}（装图）+ \texttt{figure}（打包）+ \texttt{\textbackslash{}caption}（编号）。以后插任何图都是这个模板。
+
+\subsection*{4.2 浮动位置：它自己会找不碍事的地方放}
+
+figure 环境里的图叫“\textbf{浮动体}”——它像一块冰漂在水面上：你在代码里写的位置只是“建议”，LaTeX 会把图放到\textbf{排版效果最好}的地方，可能是下一页开头，可能和别的图挤在一起。
+
+方括号里的 \texttt{htbp} 就是你给它的建议清单，按优先级排：
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{字母} & \textbf{意思} & \textbf{口语版} \\
+\midrule
+\texttt{h} & here & "就放这儿，尽量" \\
+\texttt{t} & top & "放某页顶部也行" \\
+\texttt{b} & bottom & "放某页底部也行" \\
+\texttt{p} & page & "实在不行，单独给我一页也行" \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\texttt{[htbp]} 合起来就是“先试这儿，不行就页顶，再不行页底，最后单独一页”。\textbf{它是被验证过几十年的默认写法，无脑用就行}——就像你不会每次插 USB 都研究正反面，试就完了。
+
+心态调整一句话：\textbf{别跟浮动体较劲}。它比你更懂“图放哪不打断阅读”。你要做的是保证代码里图的声明顺序正确（图 1 的代码在图 2 前面），剩下的位置随它去。Word 里你跟图搏斗的那一小时，就是被“我必须让它在这一页这一行”这个执念害的。
+
+\subsection*{4.3 缩放：width=0.8\textbackslash{}textwidth 就够了}
+
+\texttt{\textbackslash{}includegraphics} 的缩放就记一条：
+
+\begin{lstlisting}
+\includegraphics[width=0.8\textwidth]{result.png}
+\end{lstlisting}
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item \texttt{width=0.8\textbackslash{}textwidth}：版心宽的 80\%，\textbf{90\% 的场景用它}。太大改 0.6，太小改 0.95，随调随编随看；
+\item \texttt{width=\textbackslash{}textwidth}：占满版心，适合大图；
+\item 别用像素！写死 \texttt{width=400px} 这种，换个模板就完蛋。比例是永远安全的。
+\end{itemize}
+
+\subsection*{4.4 并排两图：subcaption}
+
+导师要的“两图并排、各自编号”，Word 里要靠表格 hack。LaTeX 里用 \texttt{subcaption} 宏包：
+
+\begin{lstlisting}
+\documentclass[UTF8, 12pt]{ctexart}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\begin{document}
+
+\begin{figure}[htbp]
+  \centering
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{cat.png}
+    \caption{猫}
+    \label{fig:cat}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{dog.png}
+    \caption{狗}
+    \label{fig:dog}
+  \end{subfigure}
+  \caption{分类实验的两类样本}
+  \label{fig:compare}
+\end{figure}
+
+\end{document}
+\end{lstlisting}
+
+编译后：两张图并排，下面各带“（a）猫”“（b）狗”，整体再有一个大图注“图 1：分类实验的两类样本”。
+
+\textbf{逐行拆解}：
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item \texttt{subfigure} 环境：每个装一张小图，\texttt{[b]\{0.48\textbackslash{}textwidth\}} 表示“宽 0.48 版心”——两张加起来 0.96，留一点缝。小图里的 \texttt{\textbackslash{}includegraphics} 写 \texttt{width=\textbackslash{}textwidth} 指的是\textbf{占满小盒子}的宽；
+\item \texttt{\textbackslash{}hfill}：两张图中间撑开弹性空隙；
+\item 编号全自动：大图是图 1，小图自动是 1(a)、1(b)。往中间再插一张小图，后面的编号照样自动重排——这就是 LaTeX 的日常。
+\end{itemize}
+
+\subsection*{4.5 图片多起来：\textbackslash{}graphicspath 管路径}
+
+图一多，全堆在主文件夹里乱糟糟。建个子文件夹 \texttt{images/} 放图，然后导言区声明一次：
+
+\begin{lstlisting}
+\graphicspath{{images/}}
+\end{lstlisting}
+
+之后所有 \texttt{\textbackslash{}includegraphics\{result.png\}} 都会自动去 \texttt{images/} 里找。有多个文件夹就多写几组花括号：\texttt{\textbackslash{}graphicspath\{\{images/\}\{figures/\}\}}。\textbf{声明一次，到处生效}，还是熟悉的味道。
+
+\subsection*{4.6 图占了整页、跑到最后去了：\textbackslash{}clearpage}
+
+浮动体的两个经典“事故”，解法都是一招。
+
+\textbf{事故一}：图占了整页，正文被挤到很后面。多半是图太大（比如 \texttt{width=\textbackslash{}textwidth} 还超高），或者你正写在一页的末尾，图放不下只能翻页。
+
+\textbf{事故二}：更诡异的——文档都编完了，\textbf{最后多出好几页全是图}。这是因为图“找位置”时一直没找到合适的，只能排队排到文档末尾，全挤在那儿。
+
+解法：在合适的位置（比如一章结束处）加一条：
+
+\begin{lstlisting}
+\clearpage
+\end{lstlisting}
+
+它的意思是“\textbf{所有没安排完的图，必须在此处之前全部安置好，然后换页}”。相当于强制清空浮动体队列。图跑最后去了？在正文中间插一两个 \texttt{\textbackslash{}clearpage}，它们就被押送回正确的位置了。
+
+\painhead{Word 做法 vs LaTeX 做法 · 对照小结}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{事项} & \textbf{Word 做法} & \textbf{LaTeX 做法} \\
+\midrule
+插图 & 插入 \ensuremath{\rightarrow} 图片 \ensuremath{\rightarrow} 拖位置 & 三件套，代码声明 \\
+图的位置 & 手拖，拖一次乱一次 & 浮动体自动找位置 \\
+缩放 & 拖角上的小圆点 & \texttt{width=0.8\textbackslash{}textwidth} 按比例 \\
+图注编号 & 手打"图 1"或用题注（一半人不知道） & \texttt{\textbackslash{}caption} 自动编号 \\
+并排两图 & 塞进表格 hack & \texttt{subfigure} 环境正大光明 \\
+图乱跑 & 手动搏斗到天亮 & \texttt{\textbackslash{}clearpage} 强制安置 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\painhead{翻车合集}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{症状} & \textbf{原因} & \textbf{解法} \\
+\midrule
+\texttt{! LaTeX Error: File 'result.png' not found.} & 文件名/路径不对，或图不在同目录 & 核对文件名（区分大小写）；或用 \texttt{\textbackslash{}graphicspath} 指路 \\
+\texttt{! LaTeX Error: Unknown graphics extension: .png} & 忘了 \texttt{\textbackslash{}usepackage\{graphicx\}} & 导言区补上 \\
+图跑到文档最后几页去了 & 图找不到位置，排队排到了末尾 & 正文里加 \texttt{\textbackslash{}clearpage} 清队列 \\
+图占了一整页还溢出 & 图缩放太大 & 改小 \texttt{width}，比如 0.7\textbackslash{}textwidth \\
+\texttt{! LaTeX Error: Environment subfigure undefined} & 忘了 \texttt{\textbackslash{}usepackage\{subcaption\}} & 导言区补上 \\
+图和图注之间空了一大截 & 图四周有默认间距，正常现象 & 别手动塞空行去修，越修越乱 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section*{练习}
+
+\begin{enumerate}
+\setlength{\itemsep}{2pt}
+\item 建文件夹 \texttt{img-practice}，放两张随便什么图进去，用三件套各插一张，一张 0.5 宽一张 0.9 宽，编译看效果；
+\item 把其中一张的 \texttt{[htbp]} 改成 \texttt{[p]}，编译两遍对比：图是不是跑去“专属页”了？再改回 \texttt{[htbp]}；
+\item 用 \texttt{subcaption} 并排两张图，共用一个大图注“我的两张测试图”；
+\item 建个子文件夹 \texttt{images/}，把图挪进去，配好 \texttt{\textbackslash{}graphicspath}，确认编译不报错；
+\item \textbf{故意翻车题}：把 \texttt{\textbackslash{}includegraphics\{result.png\}} 里的文件名改成不存在的 \texttt{result2.png}，编译，读一遍报错原文——以后你插 20 张图，这个错迟早见面，提前混个脸熟。
+\end{enumerate}
+
+图插好了、编号自动了，新的问题来了：正文里怎么写“如图 3 所示”才能在删图加图时不用手动改号？下一章解决第三笔血债：\textbf{交叉引用}。

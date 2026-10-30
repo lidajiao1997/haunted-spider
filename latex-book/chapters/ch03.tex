@@ -1,0 +1,222 @@
+\chapter{目录和页码，交稿前又得手动刷新一遍}
+
+\begin{notebox}
+本章解决 Word 的第二笔血债：目录和标题页。顺便，你会领悟全书最重要的一条真理——“编译两遍”。
+\end{notebox}
+
+\painhead{烦恼}
+
+“交稿前还得记得点一遍'更新域'，忘了就是旧页码。”
+
+\painhead{现象 · 这些场景你肯定见过}
+
+\textbf{场景一}：论文终于写完，你把目录页码检查了一遍，导出 PDF，睡觉。第二天导师回复：“目录里的页码怎么全对不上？”——你昨晚改完正文，忘了右键“更新域”。
+
+\textbf{场景二}：你在正文里加了半页内容，后面所有章节的页码整体后移。目录不知道，页眉不知道，你自己也不知道，直到答辩前夜才发现目录最后一章的页码差了两页。
+
+\textbf{场景三}：交终稿前五分钟，你突然想起来：“对了，目录还没更新。”全组人围着你电脑等 Word 卡着刷新，那种感觉，谁试谁知道。
+
+病根还是那个：Word 的目录是“\textbf{快照}”——拍的是你上一次手动刷新时的样子，之后文档怎么变它一概不问。
+
+LaTeX 的目录不是快照，是“\textbf{现算的}”：每次编译，它都重新数一遍你所有标题的页码。你要做的只有一件事——\textbf{记住编译两遍}。
+
+\painhead{解决线路}
+
+\subsection*{3.1 自动目录：一行命令 + 编译两遍}
+
+新建文件，敲进去，XeLaTeX 编译：
+
+\begin{lstlisting}
+\documentclass[UTF8, 12pt]{ctexart}
+\begin{document}
+
+\tableofcontents
+
+\section{绪论}
+
+本章介绍研究背景。
+
+\section{方法}
+
+本章介绍研究方法。
+
+\subsection{实验设计}
+
+具体设计如下。
+
+\end{document}
+\end{lstlisting}
+
+\textbf{注意}：第一次编译完，目录的位置可能是\textbf{空的}，或者只有几个标题没有页码。别慌，这不是 bug——\textbf{再点一次绿色“排版”按钮}，目录就齐了。
+
+这就是本章的金句，请刻在脑子里：
+
+\begin{notebox}
+\textbf{第一次编译搭架子，第二次编译填内容。目录、引用、编号，全靠“编译两遍”。}
+\end{notebox}
+
+为什么？第一次编译时，LaTeX 一边排正文一边把“每个标题在第几页”记到一个小账本文件（\texttt{.toc} 文件）里；编译结束时目录还是空的，因为它读到账本时账还没记完。第二次编译，它翻开账本，把页码填进去。就这么朴素。
+
+\textbf{逐行拆解}：
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item \texttt{\textbackslash{}tableofcontents}：命令一整个目录，放在哪，目录就出现在哪（一般放标题页或正文最前面）；
+\item 目录里有什么？\textbf{所有带编号的标题自动进目录}——第 2 章学的 \texttt{\textbackslash{}section}、\texttt{\textbackslash{}subsection} 一个不落；
+\item 以后你增删章节、改标题名字，什么都不用做，编译两遍，目录永远是对的。
+\end{itemize}
+
+顺便看清一条警告。第一次编译后翻控制台，你八成能看到这条（第 1 章见过它）：
+
+\begin{lstlisting}
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+\end{lstlisting}
+
+翻译：\textbf{“有东西变了，请再编译一遍。”} 看到它，照做就行。这条警告是 LaTeX 在提醒你“还没编译够两遍”，是善意的唠叨，不是报错。
+
+\subsection*{3.2 标题页：\textbackslash{}maketitle}
+
+论文的第一页要写题目、作者、日期。Word 里你要空出第一页，回车回车回车地往下怼。LaTeX 里三行声明、一行生成：
+
+\begin{lstlisting}
+\documentclass[UTF8, 12pt]{ctexart}
+\title{基于深度学习的猫狗图像分类研究}
+\author{王小明 \quad 指导教师：李教授}
+\date{2026年6月}
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\section{绪论}
+
+\end{document}
+\end{lstlisting}
+
+编译，第一页自动生成：题目居中大字，下面作者，再下面日期，各占一行，间距舒展。
+
+\textbf{逐行拆解}：
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item \texttt{\textbackslash{}title\{...\}}、\texttt{\textbackslash{}author\{...\}}、\texttt{\textbackslash{}date\{...\}}：三条“填表”命令，写在\textbf{导言区}（\texttt{\textbackslash{}begin\{document\}} 之前），只是声明，此刻还不显示任何东西；
+\item \texttt{\textbackslash{}maketitle}：\textbf{按声明制表}。这条必须放在正文区，你不写它，标题页就不出现；
+\item \texttt{\textbackslash{}quad}：输出一个空格的宽度，用来隔开“王小明”和“指导教师”；
+\item \texttt{\textbackslash{}date\{...\}}：日期随便写。想自动填当天日期，写 \texttt{\textbackslash{}date\{\textbackslash{}today\}}。
+\end{itemize}
+
+\subsection*{3.3 摘要：abstract 环境}
+
+论文要有摘要。\texttt{ctexart} 给你现成的：
+
+\begin{lstlisting}
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+本文研究了猫狗图像的分类问题，提出了一个准确率很高的模型，
+具体多高取决于实验数据，此处从略。
+\end{abstract}
+
+\tableofcontents
+
+\section{绪论}
+
+\end{document}
+\end{lstlisting}
+
+编译后：自动生成居中的“摘要”二字，正文缩进排版，环境结束后自动换页——你没调任何格式。写英文文档时，它会自动显示 “Abstract”，这也是 LaTeX “你管内容，格式我来”的体现。
+
+\subsection*{3.4 不编号的标题想进目录：\textbackslash{}section*\{\} + \textbackslash{}addcontentsline}
+
+第 2 章讲过，\texttt{\textbackslash{}section*\{致谢\}} 不编号，但它\textbf{也不进目录}。可论文里“致谢”“参考文献”明明就要出现在目录里。解法：紧跟一行 \texttt{\textbackslash{}addcontentsline}：
+
+\begin{lstlisting}
+\section*{致谢}
+
+\addcontentsline{toc}{section}{致谢}
+
+感谢我的导师，感谢我的家人，感谢一直没让我重写的审稿人。
+\end{lstlisting}
+
+编译两遍后，“致谢”出现在目录里了（且没有编号）。
+
+\textbf{逐行拆解}：
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item \texttt{\textbackslash{}section*\{致谢\}}：不编号的标题，负责“页面上看到致谢二字”；
+\item \texttt{\textbackslash{}addcontentsline\{toc\}\{section\}\{致谢\}}：往目录账本里手工记一笔——“目录（toc）里，按 section（节）这个层级，记一条叫'致谢'的条目”。三个花括号各司其职；
+\item \textbf{顺序很重要}：\texttt{\textbackslash{}addcontentsline} 要放在 \texttt{\textbackslash{}section*} 的\textbf{下一行}，这样记录的页码才是致谢开头那页。放在前面页码会差一页。
+\end{itemize}
+
+\subsection*{3.5 article / report / book：一句话回顾}
+
+第 2 章讲过文档类，这里串一下它们和本章内容的配合：
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{4}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{文档类} & \textbf{标题页} & \textbf{摘要} & \textbf{目录} \\
+\midrule
+\texttt{ctexart} & \texttt{\textbackslash{}maketitle} 生成标题块，不单独占页 & abstract 和正文同页 & 照常 \\
+\texttt{ctexrep} & 同上，标题不单独占页 & abstract 单独一页 & 照常 \\
+\texttt{ctexbook} & \texttt{\textbackslash{}maketitle} 自动\textbf{单独一页} & 单独一页 & 章从奇数页起 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+选型口诀照旧：\textbf{没有章用 art，有章用 rep，写书用 book}。本章所有命令在三种文档类里用法完全一样，只是排版细节略有不同——不用担心，遇到再查。
+
+\painhead{Word 做法 vs LaTeX 做法 · 对照小结}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{事项} & \textbf{Word 做法} & \textbf{LaTeX 做法} \\
+\midrule
+生成目录 & 引用 \ensuremath{\rightarrow} 目录，交稿前手动"更新域" & \texttt{\textbackslash{}tableofcontents} + 编译两遍 \\
+目录内容变化 & 忘更新就是旧页码，没人提醒 & 每次编译现算，警告会催你重编 \\
+标题页 & 空行怼出第一页，肉眼对齐 & \texttt{\textbackslash{}title/\textbackslash{}author/\textbackslash{}date} 填表 + \texttt{\textbackslash{}maketitle} \\
+摘要 & 手动写"摘要"二字，居中，缩进 & \texttt{abstract} 环境一键搞定 \\
+不编号标题进目录 & 手动去目录里补一行 & \texttt{\textbackslash{}addcontentsline} 记一笔 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\painhead{翻车合集}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{症状} & \textbf{原因} & \textbf{解法} \\
+\midrule
+目录是空的，或没有页码 & 只编译了一遍 & \textbf{再点一次排版按钮}，金句复习 \\
+目录永远差一遍、页码对不上 & 每次改完只编一遍就关 & 养成习惯：交稿前连点两遍"排版" \\
+控制台出现 "Rerun to get cross-references right" & 正常警告，不是报错 & 照它说的做：再编译一遍 \\
+\texttt{\textbackslash{}maketitle} 上了，标题页没出来 & 三条填表命令写了，但忘了写 \texttt{\textbackslash{}maketitle} & 在正文区补上 \texttt{\textbackslash{}maketitle} \\
+致谢进了目录但页码差一页 & \texttt{\textbackslash{}addcontentsline} 写在了 \texttt{\textbackslash{}section*} 前面 & 挪到 \texttt{\textbackslash{}section*} 的下一行 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section*{练习}
+
+\begin{enumerate}
+\setlength{\itemsep}{2pt}
+\item 把第 2 章你写的《我的一周》升级：加上标题页（题目随意、作者写你名字、日期用 \texttt{\textbackslash{}today}）、摘要和目录，编译两遍，检查目录页码是否正确；
+\item 再插入一个新节，只编译一遍，观察目录哪里不对；然后编译第二遍，确认它自愈；
+\item 给文档加一个 \texttt{\textbackslash{}section*\{附：减肥失败报告\}}，并让它出现在目录里；
+\item 把文档类换成 \texttt{ctexbook}，观察标题页和目录的变化，然后换回来；
+\item \textbf{故意翻车题}：把 \texttt{\textbackslash{}addcontentsline} 放到 \texttt{\textbackslash{}section*} 的\textbf{前面}，编译两遍，在目录里找到那一条，看看页码差了几页——亲眼见过，你才会在真翻车时一秒定位。
+\end{enumerate}
+
+目录、标题页、摘要齐了，你的文档已经有论文的“壳”了。下一章往里面填肉：\textbf{插图}——以及那个著名的都市传说，“图一插进来，后面的字全飞了”。

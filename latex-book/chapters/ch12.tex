@@ -1,0 +1,229 @@
+\chapter{文档一长，Word 打开都要等半天}
+
+\begin{notebox}
+本章解决长文档卡顿：主文件 + 章节文件的项目结构。文件拆开，各章各管各的。
+\end{notebox}
+
+\painhead{烦恼}
+
+“毕业论文一百多页，Word 打开要等一分钟，翻页卡成 PPT，插一张图能转半天圈。想只改第 5 章，还得在几百页里滚来滚去找位置。”
+
+\painhead{现象 · 这些场景你肯定见过}
+
+\textbf{场景一}：论文写到 90 页，每次打开 Word 都像开盲盒——今天 40 秒，今天带图片的那个下午直接没响应。保存的时候心里都在祈祷别崩。
+
+\textbf{场景二}：五人小组论文，微信里传来传去“论文-终版.docx”“论文-终版2-改了摘要.docx”“论文-真终版-别用上一个.docx”。谁手里是最新的，全靠玄学。
+
+\textbf{场景三}：答辩前一晚只想改第五章结论的一个措辞，但每次编译都要等全文几十张图全跑一遍，改一个字等三分钟，改一晚上等一夜。
+
+LaTeX 的解法一句话：\textbf{把文档拆成一个主文件加一堆章节文件，每章一个小文件，各改各的，想编哪章编哪章。}
+
+\painhead{解决线路}
+
+\subsection*{12.1 最小例子：一个主文件 + 两个章节文件}
+
+先建文件夹（全英文路径，第 1 章的老规矩），然后在里面建三个文件：
+
+\begin{lstlisting}
+mythesis/
+├── main.tex        ← 主文件
+├── chap1.tex       ← 第一章
+└── chap2.tex       ← 第二章
+\end{lstlisting}
+
+\texttt{chap1.tex} 里\textbf{只写正文}，不写 \texttt{\textbackslash{}documentclass}，也不写 \texttt{\textbackslash{}begin\{document\}}：
+
+\begin{lstlisting}
+\section{绪论}
+
+本文研究一个很重要的问题。
+
+\subsection{研究背景}
+
+背景是这样的。
+\end{lstlisting}
+
+\texttt{chap2.tex} 同理，写第二章的内容。
+
+\texttt{main.tex} 是总指挥，写完整的骨架，在正文里用 \texttt{\textbackslash{}input} 把章节文件“接”进来：
+
+\begin{lstlisting}
+\documentclass[UTF8]{ctexrep}
+\begin{document}
+
+\input{chap1}
+\input{chap2}
+
+\end{document}
+\end{lstlisting}
+
+\textbf{在 TeXworks 里打开 main.tex，引擎选 XeLaTeX，点绿色“排版”按钮}——编译出来的 PDF 包含两章完整内容，跟全写在一个文件里一模一样。
+
+\textbf{逐行拆解}：
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item \texttt{\textbackslash{}input\{chap1\}}：把 \texttt{chap1.tex} 的内容原样“粘”到这个位置。不用写扩展名 \texttt{.tex}，LaTeX 自己知道；
+\item 编译的时候，\textbf{你打开、你点按钮的，始终是 main.tex}——这条后面专门讲，是新手第一大困惑。
+\end{itemize}
+
+\subsection*{12.2 毕业论文标准目录树（直接抄）}
+
+正经论文项目，推荐这个结构，存下来能用四年：
+
+\begin{lstlisting}
+mythesis/
+├── main.tex              ← 主文件：骨架 + 设置，基本不动
+├── chapters/             ← 各章单独一个文件
+│   ├── chap1.tex         ← 绪论
+│   ├── chap2.tex         ← 文献综述
+│   ├── chap3.tex         ← 研究方法
+│   ├── chap4.tex         ← 实验与分析
+│   └── chap5.tex         ← 结论
+├── figures/              ← 所有图片住这里
+└── refs.bib              ← 参考文献库（第 8 章的老朋友）
+\end{lstlisting}
+
+\texttt{main.tex} 里接章就带上文件夹路径：
+
+\begin{lstlisting}
+\documentclass[UTF8]{ctexrep}
+\usepackage{graphicx}
+\graphicspath{{figures/}}    % 图片默认去 figures/ 文件夹找（第 4 章讲过）
+
+\begin{document}
+
+\input{chapters/chap1}
+\input{chapters/chap2}
+\input{chapters/chap3}
+\input{chapters/chap4}
+\input{chapters/chap5}
+
+\end{document}
+\end{lstlisting}
+
+文件夹建好、文件拆好之后，你改第三章就只打开 \texttt{chapters/chap3.tex}，再也不用在几百页里滚动钓鱼了。而且小组合稿时每人认领一个章节文件，微信里传的是“chap3.tex”而不是整份论文——场景二的“终版套终版”直接绝迹。
+
+\subsection*{12.3 \textbackslash{}input vs \textbackslash{}include：一张决策表}
+
+LaTeX 提供了两个“接文件”的命令，\texttt{\textbackslash{}input} 和 \texttt{\textbackslash{}include}。日常口诀：\textbf{短拼接用 input，长文档分章用 include}。
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{对比项} & \textbf{\texttt{\textbackslash{}input}} & \textbf{\texttt{\textbackslash{}include}} \\
+\midrule
+本质 & 单纯把内容粘进来 & 专门为"分章"设计的 \\
+自动分页 & 不会，前后无缝拼接 & \textbf{会}，每个文件前后自动 \texttt{\textbackslash{}clearpage} \\
+能不能嵌套（文件里再 input 文件） & 可以 & \textbf{不行}，include 的文件里不能再 include \\
+文件里能写 \texttt{\textbackslash{}begin\{document\}} 吗 & 都不能 & 都不能 \\
+适合场景 & 导言区拆设置、小片段拼接 & 论文各章、需要单独编译控制的长文档 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+你唯一要记的实际差别就两条：\textbf{include 会自动换页且不能嵌套；input 是简单拼接}。拿不准就用 \texttt{\textbackslash{}input}，它能干 include 能干的绝大部分事；但一旦你想用下一节的 \texttt{\textbackslash{}includeonly} 提速，就必须换成 \texttt{\textbackslash{}include}。
+
+\subsection*{12.4 \textbackslash{}includeonly：只编某一章，编译快到飞起}
+
+写论文中后期，全文几十张图，每改一个字都全量编译，等得人心焦。解法是 \texttt{\textbackslash{}includeonly}。
+
+前提：主文件里用 \texttt{\textbackslash{}include}（不是 \texttt{\textbackslash{}input}）接章：
+
+\begin{lstlisting}
+\documentclass[UTF8]{ctexrep}
+\usepackage{graphicx}
+\graphicspath{{figures/}}
+
+\includeonly{chapters/chap4}   % ← 只编译第四章，其他章一律跳过
+
+\begin{document}
+
+\include{chapters/chap1}
+\include{chapters/chap2}
+\include{chapters/chap3}
+\include{chapters/chap4}
+\include{chapters/chap5}
+
+\end{document}
+\end{lstlisting}
+
+点排版按钮后，PDF 里只有第四章——其他章被跳过，图片也不加载，编译时间砍掉一大截。改完第四章要交稿了，把 \texttt{\textbackslash{}includeonly} 那行\textbf{注释掉或删掉}，全量编译一遍出成品。
+
+两个要点：
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item 被跳过的章节\textbf{编号和交叉引用不会乱}。因为之前的编译已经把编号信息存在辅助文件里了，\texttt{图 4.2} 还是 \texttt{图 4.2}——这正是 include 比 input 强的地方，也是“分章必须用 include”的核心理由；
+\item \textbf{目录页码在这时是“旧”的}——只编一章，其他章的页码自然没更新。所以 \texttt{\textbackslash{}includeonly} 只用于\textbf{写作阶段}，交稿前必须全量编译。想要 PDF 更小、编译更快，还可以在文档类加 \texttt{draft} 选项（图片只显示占位框），配合食用更佳。
+\end{itemize}
+
+\textbf{口语化金句}：\texttt{\textbackslash{}includeonly} 是“请假条”——只让第四章来上班，其他人别来捣乱；但发毕业证（交稿）那天，全员必须到齐。
+
+\subsection*{12.5 新手第一大困惑：编译的永远是主文件}
+
+文件一拆开，困惑就来了：\textbf{我点了排版按钮，怎么出来的 PDF 没有我改的内容？}
+
+十有八九是这两种情况之一：
+
+\begin{enumerate}
+\setlength{\itemsep}{2pt}
+\item 你在 TeXworks 里打开的是 \texttt{chap3.tex}，点排版按钮——它试图把 \texttt{chap3.tex} 当完整文档编译，要么报错（因为没有 \texttt{\textbackslash{}documentclass}），要么编出一个残缺 PDF。\textbf{正确姿势：在 TeXworks 里打开 main.tex，对它点排版按钮}。章节文件只是“零件”，让零件自己上流水线，编不出整车；
+\item TeXworks 开着好几个标签页，点按钮时所在的标签不是 main.tex。低头看一眼标签名再点。
+\end{enumerate}
+
+养成一个肌肉记忆：\textbf{写论文时，TeXworks 里常驻的那个标签页永远是 main.tex}；要改某章内容，可以另开 chap3.tex 看，但编译回 main.tex。
+
+还有一条顺手送你：TeXworks 的菜单 \texttt{文件 \ensuremath{\rightarrow} 打开最近文件} 常备 main.tex，别在文件夹里翻来找去。
+
+\painhead{Word 做法 vs LaTeX 做法 · 对照小结}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{事项} & \textbf{Word 做法} & \textbf{LaTeX 做法} \\
+\midrule
+长文档打开 & 整份文档全部载入，越写越卡 & 文件拆开，编辑器里只开当前章节 \\
+只改某一章 & 打开全文档，滚动找位置 & 直接打开 \texttt{chap4.tex}，配合 \texttt{\textbackslash{}includeonly} 只编这章 \\
+多人合稿 & 传整份 docx，"终版"满天飞 & 每人一个章节文件，主文件一拼就完 \\
+图片管理 & 全嵌在文档里，文件肥大 & 图片统一放 \texttt{figures/}，文档文件很轻 \\
+编译方式 & （Word 没有编译） & 永远编译主文件，章节文件不单独编 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\painhead{翻车合集}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{症状} & \textbf{原因} & \textbf{解法} \\
+\midrule
+\texttt{! LaTeX Error: File 'chap3.tex' not found.} & 路径写错，或文件不在主文件同级/所写路径下 & 核对 \texttt{\textbackslash{}input\{chapters/chap3\}} 的路径拼写；文件名全英文 \\
+编译出来缺内容 / 报 Undefined control sequence 指向章节文件 & 对着章节文件点了排版按钮 & 打开 main.tex 再点排版按钮 \\
+用了 \texttt{\textbackslash{}includeonly} 但每章之间莫名多出分页 & \texttt{\textbackslash{}include} 本身自带 \texttt{\textbackslash{}clearpage}，这是特性不是 bug & 接受它；无缝拼接的需求用 \texttt{\textbackslash{}input} \\
+\texttt{\textbackslash{}includeonly} 后目录页码不对 & 只编了一章，全文档页码没刷新 & 交稿前删掉 \texttt{\textbackslash{}includeonly}，全量编译 \\
+\texttt{\textbackslash{}include} 的文件里又 \texttt{\textbackslash{}include} 了别的文件，报错 & include 不能嵌套 & 里面的改成 \texttt{\textbackslash{}input}，或拍平层级 \\
+图片全部找不到 & 图片搬进了 \texttt{figures/} 但主文件没设 \texttt{\textbackslash{}graphicspath} & 导言区补 \texttt{\textbackslash{}graphicspath\{\{figures/\}\}} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section*{练习}
+
+\begin{enumerate}
+\setlength{\itemsep}{2pt}
+\item 建一个 \texttt{mypractice} 文件夹，按本章结构建 main.tex 和两个章节文件，编译出两章的 PDF；
+\item 新增 \texttt{chapters/} 子文件夹，把章节文件挪进去，修改主文件的 \texttt{\textbackslash{}input} 路径，确认还能编译通过；
+\item 把 \texttt{\textbackslash{}input} 全换成 \texttt{\textbackslash{}include}，在导言区写 \texttt{\textbackslash{}includeonly\{chapters/chap2\}}，体验“只编第二章”的速度；然后删掉 \texttt{\textbackslash{}includeonly} 全量编译，检查目录页码是否恢复；
+\item \textbf{故意翻车题}：在 \texttt{chap1.tex} 里加上 \texttt{\textbackslash{}documentclass[UTF8]\{ctexart\}} 和 \texttt{\textbackslash{}begin\{document\}}，然后对 chap1.tex 点排版按钮，看看会发生什么（提示：能编出一个“孤儿文档”，但没有第二章，而且和主文件拼不起来）。把多余的行删掉恢复——体会“章节文件只写正文”这条规矩的由来；
+\item 故意把主文件里 \texttt{\textbackslash{}input\{chapters/chap1\}} 拼错成 \texttt{\textbackslash{}input\{chapters/chap11\}}，读一遍控制台的 File not found 报错，学会从报错里认出“路径问题”。
+\end{enumerate}
+
+到现在，你手里的 LaTeX 已经是“能打仗”的状态了：格式集中、长文档拆件、图表公式参考文献全链路。最后一里路是现实问题——\textbf{导师扔来一个 PDF：照这个格式做}。下一章，我们去解剖模板。

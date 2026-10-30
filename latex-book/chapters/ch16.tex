@@ -1,0 +1,307 @@
+\chapter{急救手册：报错、速查与保命技巧}
+
+\begin{notebox}
+本章不需要从头读到尾。它是工具箱：报错了翻第一节，想要效果翻第二节，忘了命令翻第三节。建议收藏，长期有效。
+\end{notebox}
+
+\section*{一、20 个最常见报错逐条修}
+
+读报错的通用姿势：\textbf{先找第一个 \texttt{!} 开头的行，再看它下面 \texttt{l.数字} 定位到源码第几行}。后面的错误多半是连坐，改完第一条再说。另有两条万能招：大括号是否成对、\texttt{\$} 是否成对。
+
+\textbf{1.}
+
+\begin{lstlisting}
+! Undefined control sequence.
+l.15 \includegrophics
+\end{lstlisting}
+
+原因：命令拼错了，LaTeX 不认识 \texttt{\textbackslash{}includegrophics}。修复：对照正确拼写改 \texttt{l.15} 那行，大小写也要对（正确是 \texttt{\textbackslash{}includegraphics}）。
+
+\textbf{2.}
+
+\begin{lstlisting}
+! Missing $ inserted.
+\end{lstlisting}
+
+原因：正文里用了数学符号（\texttt{\_}、\texttt{\textasciicircum{}}、希腊字母等），却没包进 \texttt{\$...\$}。修复：用 \texttt{\$...\$} 包起来；真想打下划线字符，写 \texttt{\textbackslash{}\_}。
+
+\textbf{3.}
+
+\begin{lstlisting}
+! LaTeX Error: File `booktabs.sty' not found.
+! LaTeX Error: File `sleep.png' not found.
+\end{lstlisting}
+
+原因：找不到文件——\texttt{.sty} 是宏包没装，\texttt{.png} 是图片不在文件夹里或文件名大小写不对。修复：缺包在命令行运行 \texttt{tlmgr install booktabs}（包名去掉 .sty）；图片检查是否和 main.tex 同文件夹、文件名一字不差。
+
+\textbf{4.}
+
+\begin{lstlisting}
+! Extra alignment tab has been changed to \cr.
+\end{lstlisting}
+
+原因：表格某行的 \texttt{\&} 比列数多了一个。修复：\texttt{\textbackslash{}begin\{tabular\}\{lcc\}} 是 3 列，每行最多 2 个 \texttt{\&}，删掉多的。
+
+\textbf{5.}
+
+\begin{lstlisting}
+! Misplaced alignment tab character &.
+\end{lstlisting}
+
+原因：\texttt{\&} 跑到表格环境外面来了。修复：正文里想打 \& 符号写 \texttt{\textbackslash{}\&}；多余的 \texttt{\&} 删掉。
+
+\textbf{6.}
+
+\begin{lstlisting}
+! LaTeX Error: Missing \begin{document}.
+\end{lstlisting}
+
+原因：\texttt{\textbackslash{}begin\{document\}} 之前出现了正文内容——手滑在导言区打了字，或混进了看不见的中文全角空格。修复：检查 \texttt{\textbackslash{}begin\{document\}} 前是不是只有命令和注释；可疑行删了重打。
+
+\textbf{7.}
+
+\begin{lstlisting}
+! LaTeX Error: \begin{figure} on input line 12 ended by \end{table}.
+\end{lstlisting}
+
+原因：环境名前后不匹配——\texttt{\textbackslash{}begin\{figure\}} 开头，却用 \texttt{\textbackslash{}end\{table\}} 收尾。修复：\texttt{\textbackslash{}begin\{什么\}} 就得 \texttt{\textbackslash{}end\{什么\}}，复制粘贴环境时最容易犯。
+
+\textbf{8.}
+
+\begin{lstlisting}
+! Missing } inserted.
+\end{lstlisting}
+
+原因：大括号没闭合，话说了一半。修复：顺着 \texttt{l.行号} 往前找，补上 \texttt{\}}。好习惯：打 \texttt{\{} 时立刻打 \texttt{\}}，再往中间填内容。
+
+\textbf{9.}
+
+\begin{lstlisting}
+LaTeX Warning: Float too large for page by 15.3pt.
+\end{lstlisting}
+
+原因：图太大，超出页面高度（是警告，但结果往往是图被截断）。修复：\texttt{width=0.8\textbackslash{}textwidth} 改小，或超高图改用 \texttt{height=0.7\textbackslash{}textheight} 控制。
+
+\textbf{10.}
+
+\begin{lstlisting}
+! LaTeX Error: Environment align undefined.
+\end{lstlisting}
+
+原因：用了 \texttt{align} 等数学环境，但没加载 amsmath。修复：导言区加 \texttt{\textbackslash{}usepackage\{amsmath\}}。
+
+\textbf{11.}
+
+\begin{lstlisting}
+LaTeX Warning: Reference `fig:trend' on page 2 undefined on input line 20.
+\end{lstlisting}
+
+原因：\texttt{\textbackslash{}ref\{fig:trend\}} 找不到对应的 \texttt{\textbackslash{}label\{fig:trend\}}——名字拼错，或还没编译两遍。修复：核对名字一字不差，再编译一遍；PDF 里的“？?”多半就是它。
+
+\textbf{12.}
+
+\begin{lstlisting}
+LaTeX Warning: Citation `zhang2023' undefined on input line 30.
+\end{lstlisting}
+
+原因：\texttt{\textbackslash{}cite} 的钥匙在 refs.bib 里找不到，或还没跑 biber。修复：核对钥匙名，按完整顺序 \textbf{XeLaTeX \ensuremath{\rightarrow} biber \ensuremath{\rightarrow} XeLaTeX \ensuremath{\rightarrow} XeLaTeX} 重编。
+
+\textbf{13.}
+
+\begin{lstlisting}
+! Emergency stop.
+\end{lstlisting}
+
+原因：紧急刹车，本身不是病因，是 LaTeX 中途罢工的告别语。修复：往上翻，找第一条 \texttt{!} 行，按那一条修。
+
+\textbf{14.}
+
+\begin{lstlisting}
+Runaway argument?
+{ ...
+! File ended while scanning use of \frac.
+\end{lstlisting}
+
+原因：某命令的参数没闭合就到了文件结尾。修复：检查报错点名的命令（这里是 \texttt{\textbackslash{}frac}），补上配对的 \texttt{\}}。
+
+\textbf{15.}
+
+\begin{lstlisting}
+! Missing number, treated as zero.
+\end{lstlisting}
+
+原因：某命令需要数字（长度、尺寸），你却没给。修复：按 \texttt{l.行号} 找到该命令，补全数字和单位。
+
+\textbf{16.}
+
+\begin{lstlisting}
+! Illegal unit of measure (pt inserted).
+\end{lstlisting}
+
+原因：长度后面没写单位，LaTeX 只好默认 pt——\texttt{\textbackslash{}vspace\{2\}} 少了 \texttt{cm} 就是这种。修复：给所有长度补上单位（cm/mm/pt）或补上 \texttt{\textbackslash{}textwidth} 这类参照。
+
+\textbf{17.}
+
+\begin{lstlisting}
+! LaTeX Error: Option clash for package xcolor.
+\end{lstlisting}
+
+原因：同一个宏包被 \texttt{\textbackslash{}usepackage} 了两次且选项不一致。修复：全文搜宏包名，把两次加载合并成一次。用别人模板时常犯。
+
+\textbf{18.}
+
+\begin{lstlisting}
+! I'm skipping whatever remains of this command.
+\end{lstlisting}
+
+原因：命令的参数没写完就断了——多半是参数里出现了空行，或 \texttt{\textbackslash{}verb} 命令跨了行。修复：删掉参数里的空行；\texttt{\textbackslash{}verb} 只写在一行内。
+
+\textbf{19.}
+
+\begin{lstlisting}
+! Package inputenc Error: Unicode character 张 (U+5F20) not set up for use with LaTeX.
+\end{lstlisting}
+
+原因：引擎选错了，pdfLaTeX 编不了中文——新手第一大坑。修复：TeXworks 引擎下拉菜单换成 \textbf{XeLaTeX} 重新编译。一句话：\textbf{写中文，XeLaTeX，别问。}
+
+\textbf{20.}
+
+\begin{lstlisting}
+*
+(Please type a command or say \end)
+\end{lstlisting}
+
+原因：控制台停住等你输入——之前的错误把 LaTeX 带进了交互模式。修复：控制台里按\textbf{回车}跳过，或点红色 \ensuremath{\times} 终止，改完代码重来。回车只是让流程走完，不解决问题本身。
+
+\section*{二、“我想要 X 效果”速查索引}
+
+照抄即可，宏包都加在导言区（\texttt{\textbackslash{}begin\{document\}} 之前）。
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{2}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{我想要} & \textbf{怎么做} \\
+\midrule
+正文两端对齐 & \texttt{ctexart} 默认就是，什么都不用做 \\
+文字加删除线 & 导言区 \texttt{\textbackslash{}usepackage[normalem]\{ulem\}}，正文 \texttt{\textbackslash{}sout\{不要的话划掉\}} \\
+彩色文字 & 导言区 \texttt{\textbackslash{}usepackage\{xcolor\}}，正文 \texttt{\textbackslash{}textcolor\{red\}\{重点\}} \\
+代码高亮 & 导言区 \texttt{\textbackslash{}usepackage\{listings\}}，正文用 \texttt{lstlisting} 环境包代码（见下方例子） \\
+标题不编号但进目录 & \texttt{\textbackslash{}section*\{致谢\}} 后紧跟 \texttt{\textbackslash{}addcontentsline\{toc\}\{section\}\{致谢\}} \\
+页码罗马数字转阿拉伯 & 正文开始处 \texttt{\textbackslash{}pagenumbering\{roman\}}，之后换 \texttt{\textbackslash{}pagenumbering\{arabic\}} \\
+图别乱跑，就在原地 & 导言区 \texttt{\textbackslash{}usepackage\{float\}}，figure 环境的位置改成 \texttt{[H]} \\
+加一段垂直空白 & 正文里 \texttt{\textbackslash{}vspace\{1cm\}}（记得带单位） \\
+某段不缩进 & 该段开头 \texttt{\textbackslash{}noindent} \\
+给一句话加边框 & 正文 \texttt{\textbackslash{}fbox\{这里被框起来了\}} \\
+重点提示框（带底色） & 导言区 \texttt{\textbackslash{}usepackage\{tcolorbox\}}，正文用 \texttt{\textbackslash{}begin\{tcolorbox\}内容\textbackslash{}end\{tcolorbox\}} \\
+1.5 倍行距 & 导言区 \texttt{\textbackslash{}usepackage\{setspace\}}，正文区开头 \texttt{\textbackslash{}onehalfspacing} \\
+页眉页脚自定义 & 导言区 \texttt{\textbackslash{}usepackage\{fancyhdr\}}（第 10 章有完整例子） \\
+引用能点击跳转、不带红框 & 导言区最后一条 \texttt{\textbackslash{}usepackage[hidelinks]\{hyperref\}} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+代码高亮最小完整例子：
+
+\begin{lstlisting}
+\documentclass[UTF8]{ctexart}
+\usepackage{listings}
+\begin{document}
+
+\begin{lstlisting}
+def main():
+    print("hello")
+\end{lstlisting}
+
+\end{document}
+\end{lstlisting}
+
+\section*{三、包速查表 + 符号速查}
+
+\subsubsection*{常用宏包}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{宏包} & \textbf{一句话说明} & \textbf{典型用法} \\
+\midrule
+\texttt{ctex} & 中文支持（ctexart 文档类自动带） & \texttt{\textbackslash{}documentclass[UTF8]\{ctexart\}} \\
+\texttt{graphicx} & 插图 & \texttt{\textbackslash{}includegraphics[width=0.8\textbackslash{}textwidth]\{a.png\}} \\
+\texttt{amsmath} & 公式增强（align、\textbackslash{}eqref 靠它） & \texttt{\textbackslash{}usepackage\{amsmath\}} \\
+\texttt{booktabs} & 三线表三条线 & \texttt{\textbackslash{}toprule \textbackslash{}midrule \textbackslash{}bottomrule} \\
+\texttt{biblatex} & 参考文献（配 biber） & \texttt{\textbackslash{}usepackage[backend=biber, style=gb7714-2015]\{biblatex\}} \\
+\texttt{geometry} & 页边距 & \texttt{\textbackslash{}geometry\{margin=2.5cm\}} \\
+\texttt{xcolor} & 颜色 & \texttt{\textbackslash{}textcolor\{blue\}\{字\}} \\
+\texttt{float} & 强制图片位置 & figure 环境用 \texttt{[H]} \\
+\texttt{hyperref} & 引用变超链接（永远最后加载） & \texttt{\textbackslash{}usepackage[hidelinks]\{hyperref\}} \\
+\texttt{subcaption} & 并排子图 & \texttt{\textbackslash{}begin\{subfigure\}\{0.48\textbackslash{}textwidth\}} \\
+\texttt{ulem} & 删除线 & \texttt{\textbackslash{}sout\{划掉\}} \\
+\texttt{setspace} & 行距 & \texttt{\textbackslash{}onehalfspacing} \\
+\texttt{fancyhdr} & 页眉页脚 & 第 10 章 \\
+\texttt{listings} & 代码排版 & 第二节有最小例 \\
+\texttt{tcolorbox} & 彩色提示框 & 第二节有用法 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{常用数学符号}
+
+用法统一是 \texttt{\$ 符号 \$}，比如 \texttt{\$\textbackslash{}alpha\$} 出 \ensuremath{\alpha}。
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{4}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{符号} & \textbf{命令} & \textbf{符号} & \textbf{命令} \\
+\midrule
+\ensuremath{\alpha} & \texttt{\textbackslash{}alpha} & \ensuremath{\beta} & \texttt{\textbackslash{}beta} \\
+\ensuremath{\gamma} & \texttt{\textbackslash{}gamma} & \ensuremath{\delta} & \texttt{\textbackslash{}delta} \\
+\ensuremath{\theta} & \texttt{\textbackslash{}theta} & \ensuremath{\lambda} & \texttt{\textbackslash{}lambda} \\
+\ensuremath{\mu} & \texttt{\textbackslash{}mu} & \ensuremath{\sigma} & \texttt{\textbackslash{}sigma} \\
+\ensuremath{\pi} & \texttt{\textbackslash{}pi} & \ensuremath{\omega} & \texttt{\textbackslash{}omega} \\
+\ensuremath{\Delta} & \texttt{\textbackslash{}Delta} & \ensuremath{\Omega} & \texttt{\textbackslash{}Omega} \\
+\ensuremath{\Sigma}（求和） & \texttt{\textbackslash{}sum} & \ensuremath{\int}（积分） & \texttt{\textbackslash{}int} \\
+\ensuremath{\partial} & \texttt{\textbackslash{}partial} & \ensuremath{\infty} & \texttt{\textbackslash{}infty} \\
+\ensuremath{\leq} & \texttt{\textbackslash{}leq} & \ensuremath{\geq} & \texttt{\textbackslash{}geq} \\
+\ensuremath{\neq} & \texttt{\textbackslash{}neq} & \ensuremath{\approx} & \texttt{\textbackslash{}approx} \\
+\ensuremath{\pm} & \texttt{\textbackslash{}pm} & \ensuremath{\times} & \texttt{\textbackslash{}times} \\
+\ensuremath{\rightarrow} & \texttt{\textbackslash{}rightarrow} & \ensuremath{\Rightarrow} & \texttt{\textbackslash{}Rightarrow} \\
+\ensuremath{\leftrightarrow} & \texttt{\textbackslash{}leftrightarrow} & \ensuremath{\Leftrightarrow} & \texttt{\textbackslash{}Leftrightarrow} \\
+\ensuremath{\in} & \texttt{\textbackslash{}in} & \ensuremath{\notin} & \texttt{\textbackslash{}notin} \\
+\ensuremath{\subset} & \texttt{\textbackslash{}subset} & \ensuremath{\cup} / \ensuremath{\cap} & \texttt{\textbackslash{}cup} / \texttt{\textbackslash{}cap} \\
+\ensuremath{\forall} & \texttt{\textbackslash{}forall} & \ensuremath{\exists} & \texttt{\textbackslash{}exists} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{notebox}
+想不到符号命令？画出来认——第 6 章提过：拿鼠标在 detexify 网站上画一笔，它猜给你命令。这张表覆盖日常 90\%，剩下的交给它。
+\end{notebox}
+
+\subsubsection*{TeXworks 保命技巧}
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item \textbf{Tab 补全}：敲 \texttt{\textbackslash{}begin} 后按 Tab 能补全命令。不用背全拼，敲前几个字母按 Tab 试探，效率翻倍；
+\item \textbf{源码与 PDF 互跳}：按住 \textbf{Ctrl} 点击源码，PDF 跳到对应位置；反过来 Ctrl+点击 PDF 也能跳回源码（SyncTeX）。百页文档找错全靠它；
+\item \textbf{常用快捷键}：\texttt{Ctrl + S} 保存（编译前必须存，TeXworks 编的是硬盘上的文件，不保存等于白改）、\texttt{Ctrl + F} 查找、\texttt{Ctrl + T} 注释选中行 / \texttt{Ctrl + U} 取消注释（排查错误时把可疑行注释掉再看，神器）；
+\item \textbf{控制台“按回车继续”}：看到 \texttt{(Please type a command or say \textbackslash{}end)} 就按回车跳过，或红 \ensuremath{\times} 终止重来。报错没修好之前，按一百次回车也编不出正确结果。
+\end{itemize}
+
+\section*{结语}
+
+全书到此结束。
+
+回头看看：14 章前你还在为改一个标题格式、刷一遍目录、手打一版参考文献发愁；现在你能从空白文件出发，一路敲出一篇带公式、图表和国标文献的完整论文——而且从今往后，改内容不用再碰格式，编号永远自己排队，参考文献永远是国标。
+
+这就是 LaTeX 和 Word 最本质的区别：\textbf{Word 里，格式是你的事；LaTeX 里，格式是它的事。}
+
+从今天起，格式的事，让它自己干。你只管把内容写好。
+
+本手册独立可查、长期有效——以后卡住了，先翻第一节对报错，再翻第二节找效果，包和符号忘了就在第三节捞。祝你以后的每一篇文档，都一次编译通过。
+
+（好吧，两次。记得编译两遍。）

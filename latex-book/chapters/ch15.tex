@@ -1,0 +1,298 @@
+\chapter{综合实战：从空白到一篇能交的小论文}
+
+\begin{notebox}
+最后一战。前面 14 章学的所有招式，这一章一口气用完——从空白文件开始，写出《浅谈大学生熬夜现象的分析》这种戏谑但五脏俱全的小论文。
+\end{notebox}
+
+\subsection*{15.0 开场白：把弹药一口气打完}
+
+学开车时教练是分开教的：这周练打方向，下周练踩离合，但真上路那天得一口气连起来。前面 14 章也一样——骨架、公式、图表编号、三线表、参考文献各自练过了，这一章把它们串成一条完整流水线。
+
+目标产物是一篇小论文，题目就叫\textbf{《浅谈大学生熬夜现象的分析》}。别笑，这题目是故意的：结构标准、内容好编、图表公式全都用得上。照着做完，你交课程论文、写数模正文、凑实验报告都是同一套动作。全文共 5 步，每步标了用到第几章，卡住了回去翻。
+
+\textbf{开工前的例行公事}：新建一个文件夹，名字全英文，比如 \texttt{D:\textbackslash{}latex\textbackslash{}paper}。主文件、图片、参考文献库，所有文件都放这里面，一个都不能少。
+
+\section*{第 1 步 搭骨架：先让文档站得住（用到了第 2、3 章）}
+\addcontentsline{toc}{section}{第 1 步 搭骨架：先让文档站得住（用到了第 2、3 章）}
+
+新建文件，保存为 \texttt{main.tex}，敲入：
+
+\begin{lstlisting}
+\documentclass[UTF8, 12pt, a4paper]{ctexart}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+
+\title{浅谈大学生熬夜现象的分析}
+\author{张三}
+\date{2026年10月}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\end{document}
+\end{lstlisting}
+
+引擎选 \textbf{XeLaTeX}，点绿色“排版”按钮。出来一个带标题和目录的 PDF——虽然目录现在是空的（一个 \texttt{\textbackslash{}section} 都还没写）。
+
+\textbf{逐行说两句}：
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item \texttt{[UTF8, 12pt, a4paper]}：中文、12 磅字、A4 纸，三个选项一次配齐；
+\item \texttt{geometry} 是第 10 章的页边距包，一行 \texttt{margin=2.5cm} 四边全定；
+\item \texttt{\textbackslash{}maketitle} 生成标题区，\texttt{\textbackslash{}tableofcontents} 生成目录。
+\end{itemize}
+
+\begin{notebox}
+\textbf{金句：目录想变新，编译得两遍。} 凡是动了 \texttt{\textbackslash{}section}、\texttt{\textbackslash{}label}、\texttt{\textbackslash{}cite} 这类“被引用”的东西，就再点一次排版按钮。控制台出现 \texttt{Rerun to get cross-references right}，意思就是“麻烦您再按一次”。
+\end{notebox}
+
+\section*{第 2 步 填文字和公式：正文就是打字（用到了第 2、6 章）}
+\addcontentsline{toc}{section}{第 2 步 填文字和公式：正文就是打字（用到了第 2、6 章）}
+
+在 \texttt{\textbackslash{}tableofcontents} 后面接着写两个 section 和一小段正文：
+
+\begin{lstlisting}
+\section{引言}
+
+随着手机屏幕越来越亮，大学生入睡时间越来越晚。
+熬夜问题已成为高校学生管理中一个绕不开的话题。
+本文将从数据出发，对这一现象进行不严肃但认真的分析。
+
+\section{模型构建}
+
+设平均入睡时间为 $t$，社交软件数为 $n$，可以建立如下关系：
+
+\begin{equation}
+  T = \frac{24}{1 + k \cdot n}
+  \label{eq:sleep}
+\end{equation}
+
+其中 $T$ 为平均睡眠时长，$k$ 为拖延系数（由室友实测标定）。由式~\eqref{eq:sleep} 可知，装的软件越多，睡得越少。
+\end{lstlisting}
+
+点排版按钮。正文出现了，公式有了编号 (1)，\texttt{式\textasciitilde{}\textbackslash{}eqref\{eq:sleep\}} 自动变成“式 (1)”——第 6 章 amsmath 的老朋友。
+
+\textbf{注意两个细节}：
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item 行内公式用 \texttt{\$...\$}，行间带编号用 \texttt{equation} 环境，第 6 章的规矩，别再混了；
+\item \texttt{\textasciitilde{}\textbackslash{}eqref\{...\}} 里的 \texttt{\textasciitilde{}} 是个不换行空格，防止“式”字和“(1)”被拆到两行去。小习惯，大体面。
+\end{itemize}
+
+\begin{notebox}
+\textbf{金句：编号一律 \texttt{\textbackslash{}label}，引用一律 \texttt{\textbackslash{}ref} / \texttt{\textbackslash{}eqref}。} 全文从头到尾不许出现手打的“(1)”——那是 Word 的老毛病，别带过来。
+\end{notebox}
+
+\section*{第 3 步 图和表：让论文看起来像篇论文（用到了第 4、5、7 章）}
+\addcontentsline{toc}{section}{第 3 步 图和表：让论文看起来像篇论文（用到了第 4、5、7 章）}
+
+\textbf{插一张图}。先随便找一张 PNG（截图、表情包都行），改名为 \texttt{sleep.png} 放进 \texttt{paper} 文件夹，然后在“模型构建”一节里加：
+
+\begin{lstlisting}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\textwidth]{sleep.png}
+  \caption{某宿舍平均入睡时间变化趋势（示意图）}
+  \label{fig:trend}
+\end{figure}
+
+如图~\ref{fig:trend} 所示，入睡时间呈明显恶化趋势。
+\end{lstlisting}
+
+\texttt{width=0.8\textbackslash{}textwidth} 表示图宽占版心的 80\%，不管原图多大都自动缩放到位；\texttt{[htbp]} 让 LaTeX 自己找不碍事的地方放——第 4 章说过，它比你更会放，别跟它抢。
+
+\textbf{再来一张三线表}。接着加一节“数据分析”：
+
+\begin{lstlisting}
+\section{数据分析}
+
+对某宿舍开展为期一周的田野调查，结果如表~\ref{tab:hours} 所示。
+
+\begin{table}[htbp]
+  \centering
+  \caption{不同年级平均入睡时间与睡眠时长}
+  \label{tab:hours}
+  \begin{tabular}{lcc}
+    \toprule
+    年级 & 平均入睡时间 & 平均睡眠时长（小时） \\
+    \midrule
+    大一 & 00:40 & 6.8 \\
+    大二 & 01:10 & 6.2 \\
+    大三 & 01:25 & 6.0 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+由表~\ref{tab:hours} 可见，年级越高，睡得越晚，这与作业量、游戏时长和"再刷十分钟"的次数正相关。
+\end{lstlisting}
+
+三线表就三条命令：\texttt{\textbackslash{}toprule}、\texttt{\textbackslash{}midrule}、\texttt{\textbackslash{}bottomrule}（第 7 章 booktabs 的三条横线）。竖线？不存在的——学术表格没有竖线，Word 时代画满网格线的日子让它过去吧。
+
+别忘了导言区加两行：
+
+\begin{lstlisting}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\end{lstlisting}
+
+编译两遍（对，又是两遍），图表编号和“图 1”“表 1”的引用全部到位。
+
+\section*{第 4 步 参考文献：机器替你排国标（用到了第 8 章）}
+\addcontentsline{toc}{section}{第 4 步 参考文献：机器替你排国标（用到了第 8 章）}
+
+\textbf{第一步：建一个 \texttt{refs.bib} 文件}（注意后缀是 \texttt{.bib} 不是 \texttt{.tex}），内容如下：
+
+\begin{lstlisting}
+@article{zhang2023,
+  author  = {张明 and 李华},
+  title   = {大学生睡眠质量与学业压力的关系研究},
+  journal = {中国青年研究},
+  year    = {2023},
+  number  = {4},
+  pages   = {56--61},
+}
+
+@book{wang2021,
+  author    = {王晓红},
+  title     = {大学生健康行为学},
+  publisher = {高等教育出版社},
+  address   = {北京},
+  year      = {2021},
+}
+\end{lstlisting}
+
+每条文献开头的 \texttt{zhang2023} 是你自己起的\textbf{引用钥匙}，后面全靠它点名。
+
+\textbf{第二步：导言区配置 biblatex}，一键国标格式：
+
+\begin{lstlisting}
+\usepackage[backend=biber, style=gb7714-2015]{biblatex}
+\addbibresource{refs.bib}
+\end{lstlisting}
+
+\texttt{style=gb7714-2015} 就是 GB/T 7714—2015 国家标准，导师要的国标格式，四个词搞定——第 8 章手打一下午的痛，到此为止。
+
+\textbf{第三步：在正文里引用}，比如在“数据分析”末尾加一句：
+
+\begin{lstlisting}
+已有研究表明，睡眠不足与学业表现呈负相关~\cite{zhang2023}。
+\end{lstlisting}
+
+\textbf{第四步：在正文最后、\texttt{\textbackslash{}end\{document\}} 之前，打印文献列表}：
+
+\begin{lstlisting}
+\printbibliography
+\end{lstlisting}
+
+\textbf{第五步：完整编译顺序}。用了 biber 就不能只按一个按钮了，按这个顺序来：
+
+\begin{lstlisting}
+XeLaTeX  →  biber  →  XeLaTeX  →  XeLaTeX
+\end{lstlisting}
+
+具体操作：第一遍正常点排版按钮（引擎 XeLaTeX）；然后引擎下拉菜单切换成 \textbf{Biber}，再点一次；最后换回 XeLaTeX 连点两遍。四遍过后，文中的 \texttt{[1]} 和文末的“参考文献”列表整整齐齐，全是国标格式。
+
+\begin{notebox}
+\textbf{金句：.bib 存一次，格式是机器的事。} 以后要换格式？改 \texttt{style=} 一个词，完事。
+\end{notebox}
+
+\section*{第 5 步 定稿检查清单：交稿前过一遍}
+\addcontentsline{toc}{section}{第 5 步 定稿检查清单：交稿前过一遍}
+
+交 PDF 前逐条打勾，这份清单能救你于导师的红笔之下：
+
+\begin{enumerate}
+\setlength{\itemsep}{2pt}
+\item \textbf{全文搜“？?”}——出现“？?”说明有引用没编出来，再编译一遍，或检查 \texttt{\textbackslash{}label} 是否写在了 \texttt{\textbackslash{}caption} 后面（第 5 章的坑）；
+\item \textbf{目录是不是最新的}——删过章节、改过标题的，必须再编译两遍；
+\item \textbf{图片是不是都出来了}——逐页看一眼；“图跑到文档最后去了”是浮动体的正常行为，用 \texttt{[htbp]}，并检查图片文件名（大小写也要对）；
+\item \textbf{字号字体}——\texttt{12pt} 是否真写进了文档类选项，别靠肉眼看；
+\item \textbf{导出 PDF 检查页边距}——用 PDF 阅读器打开 \texttt{main.pdf}（别用 TeXworks 内置预览）通读一遍，页边距、页码、断行全见真章。
+\end{enumerate}
+
+全过，就可以交了。恭喜，你刚用 LaTeX 写完了一篇完整论文——全程没有一步是“手动改编号”。
+
+\subsection*{15.6 完整成品：main.tex 全文}
+
+上面是分段讲的，这里是拼好的整份。\texttt{paper} 文件夹里放 \texttt{main.tex}、\texttt{refs.bib}、\texttt{sleep.png} 三个文件，即可编译。
+
+\begin{lstlisting}
+\documentclass[UTF8, 12pt, a4paper]{ctexart}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage[backend=biber, style=gb7714-2015]{biblatex}
+\addbibresource{refs.bib}
+
+\title{浅谈大学生熬夜现象的分析}
+\author{张三}
+\date{2026年10月}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\section{引言}
+
+随着手机屏幕越来越亮，大学生入睡时间越来越晚。熬夜问题已成为高校学生管理中一个绕不开的话题。本文将从数据出发，对这一现象进行不严肃但认真的分析。
+
+\section{模型构建}
+
+设平均入睡时间为 $t$，社交软件数为 $n$，可以建立如下关系：
+
+\begin{equation}
+  T = \frac{24}{1 + k \cdot n}
+  \label{eq:sleep}
+\end{equation}
+
+其中 $T$ 为平均睡眠时长，$k$ 为拖延系数（由室友实测标定）。由式~\eqref{eq:sleep} 可知，装的软件越多，睡得越少。
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\textwidth]{sleep.png}
+  \caption{某宿舍平均入睡时间变化趋势（示意图）}
+  \label{fig:trend}
+\end{figure}
+
+如图~\ref{fig:trend} 所示，入睡时间呈明显恶化趋势。
+
+\section{数据分析}
+
+对某宿舍开展为期一周的田野调查，结果如表~\ref{tab:hours} 所示。
+
+\begin{table}[htbp]
+  \centering
+  \caption{不同年级平均入睡时间与睡眠时长}
+  \label{tab:hours}
+  \begin{tabular}{lcc}
+    \toprule
+    年级 & 平均入睡时间 & 平均睡眠时长（小时） \\
+    \midrule
+    大一 & 00:40 & 6.8 \\
+    大二 & 01:10 & 6.2 \\
+    大三 & 01:25 & 6.0 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+由表~\ref{tab:hours} 可见，年级越高，睡得越晚，这与作业量、游戏时长和"再刷十分钟"的次数正相关。
+
+已有研究表明，睡眠不足与学业表现呈负相关~\cite{zhang2023}。
+
+\printbibliography
+
+\end{document}
+\end{lstlisting}
+
+编译口诀再念一遍：\textbf{XeLaTeX \ensuremath{\rightarrow} biber \ensuremath{\rightarrow} XeLaTeX \ensuremath{\rightarrow} XeLaTeX}。四遍之后，一篇有标题、有目录、有公式、有图表、有国标参考文献的小论文就躺在你文件夹里了。
+
+到这里，这本书教的招式你已经全部实战过了。但我们都懂一个真理：\textbf{学会了不等于不出错}。一编译，控制台还是可能蹦出一句看不懂的天书。
+
+别慌。下一章是全书最后的\textbf{急救手册}——20 个最常见报错逐条给修法，外加一整套速查表。以后卡住了就翻它，不用从头翻书。

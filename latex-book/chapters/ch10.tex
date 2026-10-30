@@ -1,0 +1,233 @@
+\chapter{页码要从正文才开始编，前面还得是罗马数字}
+
+\begin{notebox}
+本章解决“分节符恐惧症”：前置部分罗马页码、正文从 1 开始、页眉页脚怎么摆。两条命令的事。
+\end{notebox}
+
+\painhead{烦恼}
+
+“学校要求：摘要目录用罗马数字页码，正文从第 1 页开始编。我在 Word 里用分节符，'链接到前一条页眉'一点错，全文档页码直接失控。”
+
+\painhead{现象 · 这些场景你肯定见过}
+
+\textbf{场景一}：交稿前一晚，你在 Word 里给摘要和正文之间插了个分节符，页码是分开了，可正文第一页显示的是“第 5 页”——它接着前面的页数往下数。你在页码设置对话框里翻来翻去，越改越乱。
+
+\textbf{场景二}：好不容易页码对了，页眉又出问题：正文的页眉“链接到前一条页眉”没断开，摘要那节也跟着显示了“第 1 章 绪论”；断开之后，格式又跟学校要求的不一样。
+
+\textbf{场景三}：组会上师姐问你“你这页眉怎么没有页数统计？要求是'第 X 页 共 Y 页'”。你算了算全文 63 页，然后开始一页一页手填——填到第 20 页插了一张图，后面的 Y 又全变了。
+
+Word 的分节符体系是个隐藏迷宫，每个对话框都要点对。LaTeX 里这套需求就是\textbf{两三行命令}。
+
+\painhead{解决线路}
+
+\subsection*{10.1 最小例子：罗马数字 + 正文从 1 开始}
+
+先看骨架代码，XeLaTeX 编译：
+
+\begin{lstlisting}
+\documentclass[UTF8]{ctexrep}
+\begin{document}
+
+\pagenumbering{roman}   % 从这里开始，页码用小写罗马数字 i, ii, iii...
+
+\section*{摘要}
+这是摘要页，页码是 i。
+
+\newpage
+
+\section*{目录}
+
+\newpage
+
+\pagenumbering{arabic}  % 从这里开始，页码重新从 1 数，用阿拉伯数字
+
+\section{绪论}
+这是正文第一页，页码是 1。
+
+\end{document}
+\end{lstlisting}
+
+编译完翻翻 PDF：摘要那几页页脚是 i、ii，翻到“绪论”，页码变成 1，后面 2、3、4 往下数。
+
+\textbf{逐行拆解}：
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item \texttt{\textbackslash{}pagenumbering\{roman\}}：声明“从这句开始，页码换风格，从 1 重新数”。\texttt{roman} 是小写罗马数字；想用大写就写 \texttt{Roman}；
+\item \texttt{\textbackslash{}pagenumbering\{arabic\}}：同理，换成阿拉伯数字，\textbf{并且重新从 1 开始数}——这一下就解决了“正文要从第 1 页开始编”的需求；
+\item 两条命令之间的 \texttt{\textbackslash{}newpage} 是手动分页（下一节细说）。
+\end{itemize}
+
+\textbf{金句来了}：Word 里页码是“延续的流”，你要费劲去切；LaTeX 里页码是“一段一段定义的”，\texttt{\textbackslash{}pagenumbering} 用一次，新的一段就开始。想从哪开始从哪开始。
+
+常用页码风格顺手记一张表：
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{2}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{写法} & \textbf{效果} \\
+\midrule
+\texttt{\textbackslash{}pagenumbering\{arabic\}} & 1, 2, 3…… \\
+\texttt{\textbackslash{}pagenumbering\{roman\}} & i, ii, iii…… \\
+\texttt{\textbackslash{}pagenumbering\{Roman\}} & I, II, III…… \\
+\texttt{\textbackslash{}pagenumbering\{alph\}} & a, b, c……（基本用不上，知道有就行） \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection*{10.2 页边距：geometry 一行搞定}
+
+学校模板八成还会规定页边距：“上下 2.5cm，左右 3cm”。Word 里你要开“页面设置”对话框；LaTeX 里用一个宏包，导言区加两行：
+
+\begin{lstlisting}
+\usepackage{geometry}
+\geometry{a4paper, top=2.5cm, bottom=2.5cm, left=3cm, right=3cm}
+\end{lstlisting}
+
+注意 \texttt{geometry} 后面跟的是\textbf{花括号}（容易和文档类选项的方括号搞混）。一个毕业论文常用配置，直接抄走：
+
+\begin{lstlisting}
+\usepackage{geometry}
+\geometry{a4paper, top=2.54cm, bottom=2.54cm, left=3.17cm, right=3.17cm}
+\end{lstlisting}
+
+这就是传说中的“上下 2.54、左右 3.17”（也就是 Word 的默认值反推出来的常见论文要求）。你的学校要求多少，就把数字换成多少。\texttt{geometry} 还能写 \texttt{portrait}（竖版）、\texttt{landscape}（横版），不过论文一般用不着。
+
+\subsection*{10.3 页眉页脚：fancyhdr 三板斧}
+
+学校要求页眉写“第 X 章 章名”，页脚要“第 X 页 共 Y 页”？宏包 \texttt{fancyhdr} 出场。完整例子：
+
+\begin{lstlisting}
+\documentclass[UTF8]{ctexrep}
+\usepackage{lastpage}   % 为了知道"共几页"
+\usepackage{fancyhdr}
+
+\pagestyle{fancy}
+\fancyhead[C]{\leftmark}              % 页眉中间：当前章名
+\fancyfoot[C]{第 \thepage\ 页 共 \pageref{LastPage} 页}  % 页脚中间：第 X 页 共 Y 页
+
+\begin{document}
+
+\section{绪论}
+
+写点什么，多凑几页，好观察页眉页脚。
+
+\newpage
+
+\section{方法}
+
+第二页。
+
+\end{document}
+\end{lstlisting}
+
+编译（记得编两遍，“共 Y 页”要靠第二遍才知道总页数），你会看到每页页眉居中显示章名，页脚显示“第 1 页 共 2 页”。
+
+\textbf{逐行拆解}：
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item \texttt{\textbackslash{}pagestyle\{fancy\}}：开启“花式”页眉页脚模式。默认模式叫 \texttt{plain}（只有页脚中间一个页码），\texttt{fancy} 才允许你自定义；
+\item \texttt{\textbackslash{}fancyhead[C]\{...\}}：设置页眉，\texttt{[C]} 是居中（Center），还可以用 \texttt{[L]} 左、\texttt{[R]} 右；
+\item \texttt{\textbackslash{}fancyfoot[...]}：设置页脚，写法一样；
+\item \texttt{\textbackslash{}thepage}：当前页码——它会自动变成“现在这一页的编号”，你不用填数字；
+\item \texttt{\textbackslash{}pageref\{LastPage\}}：\texttt{lastpage} 宏包自动把最后一页标记成 \texttt{LastPage}，于是“最后一页的页码”就是总页数。这是“共 Y 页”的标准做法；
+\item \texttt{\textbackslash{}leftmark}：当前章的标题（在 \texttt{ctexrep} 里就是“第 X 章 章名”）。
+\end{itemize}
+
+三个位置 \texttt{[L]/[C]/[R]} 配页眉页脚自由组合，比如“页眉左边放校名、右边放章名、页脚居中放页码”：
+
+\begin{lstlisting}
+\fancyhead[L]{某某大学}
+\fancyhead[R]{\leftmark}
+\fancyfoot[C]{第 \thepage\ 页}
+\end{lstlisting}
+
+\textbf{一个小坑}：\texttt{fancyhdr} 有时会在控制台里警告 “headheight is too small”，意思是页眉区高度不够。在导言区补一行 \texttt{\textbackslash{}setlength\{\textbackslash{}headheight\}\{15pt\}} 就消停了，不影响内容，但看到警告别慌。
+
+\subsection*{10.4 分页：\textbackslash{}newpage 和 \textbackslash{}clearpage 的实用区别}
+
+两个命令都能“另起一页”，日常随便用。但有一条实用区别必须记住：
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{2}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{命令} & \textbf{行为} \\
+\midrule
+\texttt{\textbackslash{}newpage} & 单纯换页，像 Word 里按 Ctrl+回车 \\
+\texttt{\textbackslash{}clearpage} & 换页，\textbf{并且把还没排进去的图表浮动体全部强制排出来} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+第 4 章讲过：LaTeX 的图和表是“浮动体”，它会自己找合适的位置放。如果你文档后面堆积了一堆没排下的图，用 \texttt{\textbackslash{}newpage} 换页，图还是悬着不出现；用 \texttt{\textbackslash{}clearpage}，LaTeX 会说“行，欠的图我全还上”，把积压的图全排完再换页。
+
+\textbf{口语化金句}：\texttt{\textbackslash{}newpage} 是“我先走了”，\texttt{\textbackslash{}clearpage} 是“账都结了再走”。文档快结束时（比如 \texttt{\textbackslash{}end\{document\}} 前）想逼出所有没排的图，用 \texttt{\textbackslash{}clearpage}。
+
+另外别忘了：\texttt{\textbackslash{}pagenumbering} 切换页码风格时，建议在它前面用 \texttt{\textbackslash{}clearpage}（而不是 \texttt{\textbackslash{}newpage}），保证前置部分和正文老死不相往来。
+
+\subsection*{10.5 双栏排版：一句话的事}
+
+数学建模论文常常要求双栏。在文档类选项里加个 \texttt{twocolumn} 就行：
+
+\begin{lstlisting}
+\documentclass[UTF8, twocolumn]{ctexart}
+\end{lstlisting}
+
+想在文中某处从双栏切回单栏（比如标题页），用 \texttt{\textbackslash{}onecolumn}；想切回双栏用 \texttt{\textbackslash{}twocolumn}。就这么简单，不需要再展开——真用到的时候你会感谢它只有一句话。
+
+\painhead{Word 做法 vs LaTeX 做法 · 对照小结}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{事项} & \textbf{Word 做法} & \textbf{LaTeX 做法} \\
+\midrule
+前置部分罗马页码 & 分节符 + 页码格式对话框 & \texttt{\textbackslash{}pagenumbering\{roman\}} \\
+正文从 1 开始 & 同上，还得找"起始页码"选项 & \texttt{\textbackslash{}pagenumbering\{arabic\}} \\
+页边距 & 页面设置对话框 & \texttt{geometry} 宏包一行 \\
+页眉页脚 & 双击页眉，跟"链接到前一条页眉"搏斗 & \texttt{fancyhdr} 几行命令 \\
+第 X 页 共 Y 页 & 插入"总页数"域，祈祷它别出错 & \texttt{\textbackslash{}thepage} + \texttt{\textbackslash{}pageref\{LastPage\}} \\
+强制分页 & Ctrl+回车 & \texttt{\textbackslash{}newpage} / \texttt{\textbackslash{}clearpage} \\
+双栏 & 页面布局 \ensuremath{\rightarrow} 栏 & 文档类加 \texttt{twocolumn} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\painhead{翻车合集}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{症状} & \textbf{原因} & \textbf{解法} \\
+\midrule
+正文页码还是接着前面数（显示"第 5 页"） & 换风格时只改了格式忘了它会重新计数，或根本没用 \texttt{\textbackslash{}pagenumbering\{arabic\}} & 在正文开头用 \texttt{\textbackslash{}pagenumbering\{arabic\}}，它自动从 1 重新数 \\
+"共 Y 页"显示"？" & \texttt{lastpage} 没加载，或只编译了一遍 & 加 \texttt{\textbackslash{}usepackage\{lastpage\}}，再编译一遍 \\
+控制台警告 headheight is too small & 页眉区高度不够 & 导言区加 \texttt{\textbackslash{}setlength\{\textbackslash{}headheight\}\{15pt\}} \\
+页眉出现了"第 0 章"或奇怪的章名 & 在没有章的地方（如摘要）也用了 \texttt{\textbackslash{}leftmark} & 摘要等前置部分用 \texttt{\textbackslash{}pagestyle\{plain\}}，进正文再 \texttt{\textbackslash{}pagestyle\{fancy\}} \\
+图一直不出现 & 用了 \texttt{\textbackslash{}newpage}，积压的浮动体没被强制排出 & 换成 \texttt{\textbackslash{}clearpage} \\
+双栏文章里某张宽表格被腰斩 & 双栏模式下栏宽太窄 & 宽图表前 \texttt{\textbackslash{}clearpage} 后用单栏段，或用跨栏环境（进阶，先用文档类单栏顶一顶） \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section*{练习}
+
+\begin{enumerate}
+\setlength{\itemsep}{2pt}
+\item 写一个三页的小文档：第一页页码是 i，第二页页码是 ii，第三页从阿拉伯数字 1 开始。编译并翻页脚检查；
+\item 给第 1 题加上 \texttt{geometry}，把页边距改成上下 2.5cm、左右 3cm；
+\item 用 \texttt{fancyhdr} + \texttt{lastpage} 做出“第 X 页 共 Y 页”的页脚，故意只编译一遍，观察 Y 是不是“？”，然后再编一遍；
+\item \textbf{故意翻车题}：把 \texttt{\textbackslash{}fancyfoot[C]\{第 \textbackslash{}thepage\textbackslash{} 页\}} 里的反斜杠删掉一个，写成 \texttt{第 thepage 页}，编译看看——页码消失了吧？\texttt{thepage} 被当成普通文字排出来了。改回去，体会“少一个 \texttt{\textbackslash{}}，命令变单词”；
+\item 在文档里塞三四张图（可以用文字占位），在文末分别试试 \texttt{\textbackslash{}newpage} 和 \texttt{\textbackslash{}clearpage}，亲眼看看浮动体被“清账”的区别。
+\end{enumerate}
+
+到这里，单文件的“面子工程”——页码、页眉、边距——你都拿捏了。但毕业论文一百多页、小组作业四五个人合写，总不能全挤在一个文件里。下一章，先解决“每个人的格式五花八门”的问题：\textbf{格式集中管理}。

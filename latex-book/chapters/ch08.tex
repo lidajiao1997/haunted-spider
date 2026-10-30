@@ -1,0 +1,230 @@
+\chapter{参考文献格式，导师要 GB/T 7714，我手打了一下午}
+
+\begin{notebox}
+本章解决论文最后一块硬骨头：参考文献。学完这章，换格式就是改一个单词的事。
+\end{notebox}
+
+\painhead{烦恼}
+
+“五十条参考文献，我照着国标一条一条手打的，打了整整一下午，然后导师说标点要用半角。”
+
+\painhead{现象 · 这些场景你肯定见过}
+
+\textbf{场景一}：毕业论文写到凌晨，参考文献列表里每条文献的字体、标点、顺序，你都是对着《GB/T 7714—2015》的说明文档手动敲的。作者名字后面的点、年份前后的括号、“[J]”还是“[M]”——错一个字符，格式审查就打回来。
+
+\textbf{场景二}：好不容易排完了，期刊/学校突然要求换格式（比如从“顺序编码制”换成“著者-出版年制”）。五十条文献，全部重来。
+
+\textbf{场景三}：你在正文里手写了“[12]”，后来在中间插了一条新文献，于是第 12 条之后全部顺延——正文里所有的引用编号，一个一个人肉替换，替换完还漏了三个。
+
+这三个场景的病根是同一个：\textbf{你把“文献信息”和“文献格式”搅在了一起}。Word 里没有“文献库”这个概念（管理源那个功能用过的同学请举手），格式全靠手排。
+
+LaTeX 的解法一句话：\textbf{文献存一次，格式是机器的事。} 你只管把每篇文献的“生辰八字”（作者、标题、年份……）存进一个文件，排成什么样，机器说了算——要国标？一个单词的事。
+
+\painhead{解决线路}
+
+\subsection*{8.1 先说土办法：thebibliography 手写环境（应急用）}
+
+LaTeX 其实也有“手打”方案：在文档末尾用 \texttt{thebibliography} 环境一条一条写。它比 Word 强的地方只有一个——编号和 \texttt{\textbackslash{}cite} 引用是自动的，场景三的灾难不存在。
+
+但它依然是\textbf{手打格式}，换个要求照样全部重排。所以本书对它的定位是：\textbf{小作业应急}——三五条文献、不用国标格式时，凑合能用，本章不再展开。正主是下面这位。
+
+\subsection*{8.2 主力方案：biblatex 三行起步}
+
+先看最小可编译例子。新建两个文件：主文件 \texttt{main.tex} 和文献库 \texttt{refs.bib}（必须\textbf{放在同一个文件夹}，文件名全英文）。
+
+\texttt{main.tex}：
+
+\begin{lstlisting}
+\documentclass[UTF8]{ctexart}
+\usepackage[backend=biber,style=gb7714-2015]{biblatex}
+\addbibresource{refs.bib}
+\begin{document}
+
+深度学习的发展历程已有大量综述\cite{goodfellow2016}。
+教材方面的经典著作可参考\cite{knuth1984}。
+
+\printbibliography
+\end{document}
+\end{lstlisting}
+
+\texttt{refs.bib}（用记事本或 TeXworks 新建都行）：
+
+\begin{lstlisting}
+@article{goodfellow2016,
+  author  = {Goodfellow, Ian and Bengio, Yoshua},
+  title   = {Deep Learning},
+  journal = {Nature},
+  year    = {2016},
+  volume  = {521},
+  pages   = {436--444},
+}
+
+@book{knuth1984,
+  author    = {Knuth, Donald E.},
+  title     = {The TeXbook},
+  publisher = {Addison-Wesley},
+  year      = {1984},
+}
+\end{lstlisting}
+
+编译流程有点特殊，\textbf{本章最关键的操作就在这里}，先记住结论：排版按钮按一次不够，中间要跑一次 biber，一共“排一次 + biber 一次 + 排两次”。详细步骤见 8.4。
+
+\textbf{逐行拆解主文件}：
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item \texttt{\textbackslash{}usepackage[backend=biber,style=gb7714-2015]\{biblatex\}}：加载参考文献排版引擎。\texttt{backend=biber} 指定后台程序用 biber（记住这个名字，编译时要手动跑它一次）；\texttt{style=gb7714-2015} 就是\textbf{国标 GB/T 7714—2015 样式}——导师要的国标，就藏在这个选项里，一行搞定；
+\item \texttt{\textbackslash{}addbibresource\{refs.bib\}}：告诉 LaTeX“我的文献库是这个文件”。注意没有花括号套文件名，直接 \texttt{\{refs.bib\}}；
+\item \texttt{\textbackslash{}cite\{goodfellow2016\}}：在正文这个位置引用文献库中标签为 \texttt{goodfellow2016} 的那条，正文里显示为上标或方括号编号（国标样式下默认就是 \texttt{[1]} 这种）；
+\item \texttt{\textbackslash{}printbibliography}：在这个位置输出整张参考文献列表，格式全自动。
+\end{itemize}
+
+\subsection*{8.3 .bib 文件长什么样：每条文献一张“身份证”}
+
+\texttt{.bib} 文件就是文献库，每条文献是一张“身份证”。身份证有两部分：
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item \texttt{@article} 或 \texttt{@book}：\textbf{文献类型}。期刊论文是 \texttt{@article}，书是 \texttt{@book}，还有学位论文 \texttt{@thesis}（写 \texttt{@phdthesis}/\texttt{@mastersthesis}）、会议论文 \texttt{@inproceedings}、网页 \texttt{@online} 等，用哪个，机器才知道该给你标 \texttt{[J]} 还是 \texttt{[M]}；
+\item 花括号里第一串 \texttt{goodfellow2016}：\textbf{引用标签}，是你自己起的名字，正文里 \texttt{\textbackslash{}cite\{\}} 就用它来点名。起名随意，但别重复、别用中文。
+\end{itemize}
+
+然后是\textbf{字段}，一行一个，\texttt{字段名 = \{内容\}}，逗号结尾。常用字段逐个认脸：
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{字段} & \textbf{含义} & \textbf{用在哪种文献} \\
+\midrule
+\texttt{author} & 作者，多人用 \texttt{and} 连接（不是中文"和"！） & 几乎所有 \\
+\texttt{title} & 标题 & 几乎所有 \\
+\texttt{journal} & 期刊名 & \texttt{@article} \\
+\texttt{publisher} & 出版社 & \texttt{@book} \\
+\texttt{year} & 年份 & 几乎所有 \\
+\texttt{volume} / \texttt{number} & 卷 / 期 & \texttt{@article} \\
+\texttt{pages} & 页码，范围用两个减号 \texttt{--} & 期刊、会议 \\
+\texttt{address} & 出版地 & \texttt{@book} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+三个易错点，提前打预防针：
+
+\begin{enumerate}
+\setlength{\itemsep}{2pt}
+\item 多个作者必须用 \texttt{ and } 连接：\texttt{author = \{张三 and 李四\}}。写成逗号或顿号，机器认不出来；
+\item 页码范围写 \texttt{436--444}，两个短横线，不是中文的一字线；
+\item 字段顺序无所谓，缺字段也无所谓（比如网页没有页码就不写），机器缺什么就少排什么。
+\end{enumerate}
+
+\subsection*{8.4 TeXworks 完整编译流程：本章最关键的四步}
+
+biblatex 不是排一次版就完事的，完整流程是四步，\textbf{顺序不能乱}：
+
+\begin{enumerate}
+\setlength{\itemsep}{2pt}
+\item \textbf{第一步}：引擎选 \textbf{XeLaTeX}，点绿色“排版”按钮，正常编译一次。此时正文里的引用显示为 \textbf{[?]}，文末参考文献列表是空的——正常，别慌，它只是还没读到文献数据；
+\item \textbf{第二步}：点 TeXworks 顶部的“排版”按钮旁边的\textbf{下拉菜单}（就是平时选 XeLaTeX 的那个），你会发现里面除了编译引擎，还列着 \textbf{Biber} 这一项——选中它，再点一次绿色“排版”按钮。这一步就是“跑 biber”：它会去读你的 \texttt{refs.bib}，把文献数据整理好；
+\item \textbf{第三步}：下拉菜单换回 \textbf{XeLaTeX}，再排版一次。引用编号出来了；
+\item \textbf{第四步}：再排版一次（对，第二遍）。这一遍是让引用编号和文末列表完全对齐（还记得第 3 章讲的“编译两遍”真理吗，同一个道理）。
+\end{enumerate}
+
+完成后，正文里是规范的 \texttt{[1]}、\texttt{[2]}，文末是完完整整按 GB/T 7714—2015 排好的参考文献列表——连 \texttt{[J]}、\texttt{[M]} 这种文献类型标识都替你标好了。
+
+\textbf{记住这句口诀：排一次，biber 一次，再排两次。} 以后凡是改了 \texttt{.bib} 文件（加文献、删文献、改字段），都把这四步重新走一遍；只改正文不动文献的话，普通排版一次就够。
+
+\begin{notebox}
+\textbf{偷懒技巧}：嫌四步麻烦的话，TeXworks 菜单 \texttt{编辑 \ensuremath{\rightarrow} 首选项 \ensuremath{\rightarrow} 排版 \ensuremath{\rightarrow} 处理工具} 里可以把 Biber 设为自动链（不同版本界面略有差异）。但新手阶段建议老老实实手动走四步——出了问题你才知道是哪一环断了。
+\end{notebox}
+
+\subsection*{8.5 Zotero：文献库一键导出 .bib}
+
+看到这里你可能想吐槽：五十条文献，难道我要把作者标题年份一条条手打进 \texttt{.bib}？不用。\textbf{文献信息采集这件事，交给 Zotero。}
+
+Zotero 是免费的文献管理软件（去官网下载安装即可），工作流是这样的：
+
+\begin{enumerate}
+\setlength{\itemsep}{2pt}
+\item 在 Zotero 里建一个分类（比如“毕业论文”），平时看文献时用浏览器插件一键收藏，条目信息（作者、标题、期刊、年份、DOI）自动抓全；
+\item 论文写完要导出时，在 Zotero 里选中这个分类 \ensuremath{\rightarrow} 右键 \ensuremath{\rightarrow} \textbf{导出分类}；
+\item 格式选 \textbf{BibTeX}，勾上“导出笔记”不用管，保存为 \texttt{refs.bib}，放进你的 LaTeX 项目文件夹；
+\item \texttt{\textbackslash{}addbibresource\{refs.bib\}} 指向它，跑一遍 8.4 的四步流程。完事。
+\end{enumerate}
+
+从此你的工作方式是：\textbf{收集文献用 Zotero 点一下，引用文献在正文里 \texttt{\textbackslash{}cite} 一下，格式是机器的事。} 五十条文献换格式，改一个单词，四步编译，over。
+
+\subsection*{8.6 引用命令速查：\textbackslash{}cite 三兄弟}
+
+biblatex 家族的引用命令不止 \texttt{\textbackslash{}cite} 一个，常用的三兄弟各管一种场景：
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{4}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{命令} & \textbf{效果} & \textbf{一句话区别} & \textbf{例子} \\
+\midrule
+\texttt{\textbackslash{}cite\{key\}} & [1] & 最普通的"引用一下" & 该方法已被广泛使用\textbackslash{}cite\{knuth1984\}。 \\
+\texttt{\textbackslash{}parencite\{key\}} & (Knuth, 1984) & 带括号的引用（著者-出版年制下用） & 相关研究已有不少\textbackslash{}parencite\{knuth1984\}。 \\
+\texttt{\textbackslash{}textcite\{key\}} & Knuth (1984) & 把作者当主语用 & \textbackslash{}textcite\{knuth1984\} 系统阐述了这一方法。 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+用国标顺序编码制（\texttt{gb7714-2015} 默认）时，\texttt{\textbackslash{}cite} 和 \texttt{\textbackslash{}parencite} 输出差别不大；等你遇到要求“著者-出版年制”的学校模板（style 换成 \texttt{gb7714-2015ay}），\texttt{\textbackslash{}textcite} 的价值就显现了：\textbf{引用本身就能当句子成分}，不用再写“Knuth 在文献 [2] 中提出”这种别扭句。
+
+\begin{notebox}
+本章环境里 gb7714-2015 样式是 TeX Live 自带的（完整安装就有），不用额外装包。万一编译时报找不到样式的错，说明装的是精简版 TeX Live，去 TeX Live Utility 或 \texttt{tlmgr} 里补装 \texttt{biblatex-gb7714-2015} 即可——不过按第 1 章完整安装的同学不会遇到。
+\end{notebox}
+
+\painhead{Word 做法 vs LaTeX 做法 · 对照小结}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{事项} & \textbf{Word 做法} & \textbf{LaTeX 做法} \\
+\midrule
+文献信息 & 存在文档里，跟着文档走 & 存在 \texttt{.bib} 文件里，一劳永逸 \\
+文献格式 & 照着国标手打，一条一下午 & \texttt{style=gb7714-2015}，机器排 \\
+换格式要求 & 五十条全部重排 & 改一个样式名，重编译 \\
+正文引用编号 & 手写 [12]，插一条全错 & \texttt{\textbackslash{}cite} 自动编号，永不乱 \\
+文献信息采集 & 复制粘贴到文档末尾 & Zotero 一键导出 \texttt{.bib} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\painhead{翻车合集}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{症状} & \textbf{原因} & \textbf{解法} \\
+\midrule
+引用显示 [?]，文末列表空白 & 没跑 biber，或没跑完"再排两次" & 完整走一遍四步流程 \\
+\texttt{Citation 'xxx' undefined} 警告 & 同上，或 \texttt{\textbackslash{}cite} 的标签和 \texttt{.bib} 里对不上 & 跑 biber；核对两边标签拼写是否一致 \\
+\texttt{File 'refs.bib' not found} & \texttt{.bib} 文件不在同一文件夹，或文件名打错 & 挪到同一文件夹，核对文件名 \\
+引用编号出现两次 / 列表重复 & \texttt{.bib} 里同一条文献贴了两遍 & 删掉重复条目，重跑四步 \\
+\texttt{I found no \textbackslash{}citation commands} & 正文里一个 \texttt{\textbackslash{}cite} 都没有 & \texttt{\textbackslash{}printbibliography} 前得有至少一处 \texttt{\textbackslash{}cite} \\
+作者名排出来很怪 & 多个作者没用 \texttt{and} 连接 & 改成 \texttt{author = \{张三 and 李四\}} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section*{练习}
+
+\begin{enumerate}
+\setlength{\itemsep}{2pt}
+\item 按本章例子建 \texttt{main.tex} 和 \texttt{refs.bib}，把两条示例文献原样敲进去（手打！体会字段格式），完整走四步编译流程，确认正文引用和文末列表都正常；
+\item 往 \texttt{refs.bib} 里加第三条文献（类型随意），重新走四步，观察引用编号如何自动从 [1][2] 变成 [1][2][3]；
+\item 把 \texttt{\textbackslash{}cite\{knuth1984\}} 改成 \texttt{\textbackslash{}textcite\{knuth1984\}}，编译后对比输出效果；
+\item 如果你有 Zotero，收藏一篇文献并导出成 \texttt{.bib}，用 \texttt{\textbackslash{}addbibresource} 指向它编译；
+\item \textbf{故意翻车题}：把 \texttt{.bib} 里某个 \texttt{year} 字段名故意拼错（比如写成 \texttt{yaer}），重跑四步编译，观察这条文献的年份去哪了、控制台有什么警告——见过这个症状，以后就知道是自己手滑打错了字段名。
+\end{enumerate}
+
+到这里，你的论文四大件——结构、公式、表格、文献——已经凑齐了。下一章我们回头收拾一个从第 1 章就埋下的问题：\textbf{中文排版那些藏得比迷宫还深的设置}，行距 1.5、首行缩进两字符，在 LaTeX 里到底怎么一句话搞定。

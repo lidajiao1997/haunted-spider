@@ -1,0 +1,227 @@
+\chapter{删了一张图，后面几十个编号全要手动改}
+
+\begin{notebox}
+本章解决 Word 的第三笔血债：交叉引用。学完这章，“如图 X 所示”永远跟着图走，删图加图你都不用回头管。
+\end{notebox}
+
+\painhead{烦恼}
+
+“删了图 3，正文里十几处'如图 3 所示'全要找出来改成图 2，后面还有几十个编号顺延……改到怀疑人生。”
+
+\painhead{现象 · 这些场景你肯定见过}
+
+\textbf{场景一}：审稿意见要求删掉一张意义不大的图。你删了，然后开始全文搜索“图 4”改成“图 3”，“图 5”改成“图 4”……改完之后发现还有一处写着“如图 6(2)(b) 所示”，它的图早就不存在了。
+
+\textbf{场景二}：参考文献编号灾难。你引用了 20 篇文献，正文里全是手打的 [12]。导师说再补两篇最新的——新文献按年份要插到第 5 条后面，于是 [6] 变 [8]，[7] 变 [9]……你手动顺延了两个小时，最后有一处 [13] 和 [14] 写反了，直接被退回。
+
+\textbf{场景三}：公式编号。“式（3-5）”手打了十几处，在式（3-2）后面插入一个新公式，后半个章节的编号全要挪。
+
+病根：\textbf{你在 Word 里手打的编号，是死的}。它是你抄上去的一个数字，图变了它不会跟着变。
+
+LaTeX 的编号是\textbf{活的}：每张图、每个公式、每节标题都有编号，你给它们起代号，正文里用代号指路。图删了加了几号，代号不变，数字自动重算。
+
+\painhead{解决线路}
+
+\subsection*{5.1 核心二件套：\textbackslash{}label + \textbackslash{}ref}
+
+上一章你已经见过 \texttt{\textbackslash{}label\{fig:result\}} 了，当时是配角，现在是主角。完整跑一遍：
+
+\begin{lstlisting}
+\documentclass[UTF8, 12pt]{ctexart}
+\usepackage{graphicx}
+\begin{document}
+
+实验结果如图~\ref{fig:result} 所示，效果拔群。
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\textwidth]{result.png}
+  \caption{实验结果对比图}
+  \label{fig:result}
+\end{figure}
+
+数据解读详见第~\ref{sec:discuss} 节。
+
+\section{讨论}
+\label{sec:discuss}
+
+本节讨论实验结果。
+
+\end{document}
+\end{lstlisting}
+
+编译\textbf{两遍}（为什么是两遍，等下揭晓），正文里显示“如图 1 所示”“详见第 1 节”。
+
+\textbf{逐行拆解}：
+
+\begin{itemize}
+\setlength{\itemsep}{2pt}
+\item \texttt{\textbackslash{}label\{fig:result\}}：给上面那个东西（图）起个\textbf{代号}叫 \texttt{fig:result}。代号是你随便起的，用英文，别用中文；
+\item \texttt{\textbackslash{}ref\{fig:result\}}：在正文里“呼叫”这个代号，LaTeX 会把它翻译成对应的\textbf{编号}；
+\item 图的 \texttt{\textbackslash{}label} 和 \texttt{\textbackslash{}section} 后面的 \texttt{\textbackslash{}label}：各贴各的对象，互不干扰；
+\item \texttt{\textasciitilde{}}：一个“不可断行的空格”，保证“如图 1”不被拆到两行去。写 \texttt{\textbackslash{}ref} 前面加个 \texttt{\textasciitilde{}} 是好习惯。
+\end{itemize}
+
+\textbf{灵魂操作来了}：现在把这张图删掉（或者复制一张图变成两张图），重新编译两遍——正文里的编号\textbf{自己变了}。你没有搜索，没有替换，没有顺延。这就是“编号是活的”。
+
+代号命名的小讲究（不强制，但团队合写时救命）：
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{对象} & \textbf{惯用前缀} & \textbf{例子} \\
+\midrule
+图 & \texttt{fig:} & \texttt{fig:result} \\
+表 & \texttt{tab:data} & \texttt{tab:data} \\
+章节 & \texttt{sec:} & \texttt{sec:method} \\
+公式 & \texttt{eq:} & \texttt{eq:loss} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+前缀不是语法要求，纯是给人看的——三个月后你打开文档，\texttt{fig:cat} 和 \texttt{sec:cat} 谁是图谁是节，一眼分明。
+
+\subsection*{5.2 编号差一的经典坑：\textbackslash{}label 必须写在 \textbackslash{}caption 之后}
+
+这是本章最重要的坑，\textbf{按原话背下来}：\textbf{label 写在 caption 后面，写在后面，写在后面。}
+
+看反例：
+
+\begin{lstlisting}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\textwidth]{result.png}
+  \label{fig:result}   % 错！写在 caption 前面了
+  \caption{实验结果对比图}
+\end{figure}
+\end{lstlisting}
+
+这样编译\textbf{不报错}，正文里 \texttt{\textbackslash{}ref\{fig:result\}} 会显示“图 0”或一个错位的编号——因为 \texttt{\textbackslash{}label} 记录的是“它\textbf{上方}最近那个编号”，写在 caption 前面，它就没编号可记，记到上一个去了。
+
+\textbf{为什么是这个顺序}：编号是 \texttt{\textbackslash{}caption} 发的，\texttt{\textbackslash{}label} 只是抄写员——抄“上面刚发出来的那个号”。caption 还没出现，它抄到的自然是别处的号。所以口诀是：\textbf{caption 发号，label 抄号；不写 caption，先发号；不发号，先写 label，必乱}。
+
+表格同理（表在下一章细讲，这里先看结构）：
+
+\begin{lstlisting}
+\begin{table}[htbp]
+  \centering
+  \caption{各组实验数据}
+  \label{tab:data}     % 对！在 caption 之后
+  \begin{tabular}{cc}
+    组别 & 准确率 \\
+    A & 92\% \\
+    B & 88\% \\
+  \end{tabular}
+\end{table}
+\end{lstlisting}
+
+\subsection*{5.3 公式引用：\textbackslash{}eqref}
+
+公式编号的引用有个专用命令 \texttt{\textbackslash{}eqref}（在 \texttt{amsmath} 宏包里，写公式必装，下一章正式学）：
+
+\begin{lstlisting}
+\documentclass[UTF8, 12pt]{ctexart}
+\usepackage{amsmath}
+\begin{document}
+
+损失函数定义如式~\eqref{eq:loss}：
+
+\begin{equation}
+  L = \frac{1}{2}(y - \hat{y})^2
+  \label{eq:loss}
+\end{equation}
+
+把式~\eqref{eq:loss} 代入上式，可得……
+
+\end{document}
+\end{lstlisting}
+
+编译两遍，正文显示“如式（1）”。\texttt{\textbackslash{}eqref} 和 \texttt{\textbackslash{}ref} 的区别就一点：\textbf{它会自动补上括号}。\texttt{\textbackslash{}ref\{eq:loss\}} 出来是 “1”，\texttt{\textbackslash{}eqref\{eq:loss\}} 出来是 “(1)”。引用公式一律用 \texttt{\textbackslash{}eqref}，省得自己打括号还打出全角半角混排。
+
+\subsection*{5.4 “??”急救：再编译一遍}
+
+第一次编译时，正文里的引用多半显示两个问号：\textbf{“图 ??”}。
+
+别慌，这不是坏了，是\textbf{账还没对上}——\texttt{\textbackslash{}ref} 需要查阅 \texttt{\textbackslash{}label} 记在小账本（\texttt{.aux} 文件）里的编号，第一次编译时账本还是旧的。\textbf{再点一次排版按钮}，“??”就变成正确编号了。
+
+这是全书第 N 次重复那条金句了，因为它真的会陪你整个 LaTeX 生涯：
+
+\begin{notebox}
+\textbf{第一次编译搭架子，第二次编译填内容。看到 “??”，再编译一遍。}
+\end{notebox}
+
+控制台里对应的警告是第 1 章见过的 \texttt{Rerun to get cross-references right}——照做即可。如果编译了两遍甚至三遍还是 “??”，那才是真出事了，多半是 \texttt{\textbackslash{}label} 和 \texttt{\textbackslash{}ref} 的代号\textbf{拼写不一致}（比如 label 写的 \texttt{fig:result}，ref 写的 \texttt{fig:results}），肉眼对着查就行。
+
+\subsection*{5.5 复盘：写死的数字 vs 活的编号}
+
+把两种做法摆在一起，看看代价差多少：
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{操作} & \textbf{Word 手打编号} & \textbf{LaTeX 自动引用} \\
+\midrule
+正文写"如图 3 所示" & 自己看着图打上"3" & \texttt{\textbackslash{}ref\{fig:result\}}，打代号 \\
+删一张图 & 全文搜索替换十几处，还怕漏 & 什么都不做 \\
+中间插一张图 & 后面全部顺延 & 什么都不做 \\
+挪动图的位置 & 页码变了，编号重查 & 什么都不做 \\
+被退回改稿 & 每轮都重新核一遍编号 & 编译两遍，结束 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+你多付出的是什么？写 label 时多敲十几个字符。你省下的是什么？每次改稿后一两个小时的搜索替换，和一处漏改被退回的风险。这笔账，不用我帮你算了吧。
+
+\painhead{Word 做法 vs LaTeX 做法 · 对照小结}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{事项} & \textbf{Word 做法} & \textbf{LaTeX 做法} \\
+\midrule
+正文提到某图 & 手打"图 3" & \texttt{\textbackslash{}ref} 引用代号 \\
+删图/加图 & 全文手动顺延编号 & 编译两遍，自动重排 \\
+公式引用 & 手打"式（3-5）" & \texttt{\textbackslash{}eqref} 自动带括号 \\
+引用失效的信号 & 没有信号，错了也不知道 & "??" 赫然在目，逼你修 \\
+小账本 & 无 & 编译两遍自动对账 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\painhead{翻车合集}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}*{3}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+\textbf{症状} & \textbf{原因} & \textbf{解法} \\
+\midrule
+正文全是"图 ??" & 只编译了一遍 & \textbf{再编译一遍}（最后一次说这句） \\
+编了两遍还是 "??" & label 和 ref 代号拼写不一致 & 全文搜代号，逐个核对大小写 \\
+引用显示"图 0"或编号差一 & \texttt{\textbackslash{}label} 写在了 \texttt{\textbackslash{}caption} 前面 & label 挪到 caption 下一行 \\
+\texttt{! LaTeX Error: Reference ... undefined} & \texttt{\textbackslash{}ref} 的代号在全文找不到对应 \texttt{\textbackslash{}label} & 补 label 或改对拼写 \\
+引用出来没有括号 & 公式引用用了 \texttt{\textbackslash{}ref} & 换 \texttt{\textbackslash{}eqref}（记得 \texttt{\textbackslash{}usepackage\{amsmath\}}） \\
+改了正文引用没更新 & 只编一遍就交了 & 交稿前固定动作：连编两遍 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section*{练习}
+
+\begin{enumerate}
+\setlength{\itemsep}{2pt}
+\item 把第 4 章的插图文档升级：给图配 \texttt{\textbackslash{}label}，正文用 \texttt{\textasciitilde{}\textbackslash{}ref\{\}} 引用它，编译两遍确认显示“图 1”；
+\item 在两个 \texttt{\textbackslash{}section} 之间再插一节，给新节打 \texttt{\textbackslash{}label}，正文引用它，确认编号正确；
+\item 用 \texttt{amsmath} 的 \texttt{equation} 环境写一个公式，打 \texttt{\textbackslash{}label}，正文用 \texttt{\textbackslash{}eqref} 引用；
+\item 把上一题的公式\textbf{再复制一个}放在前面，编译两遍：观察两个公式和正文引用的编号怎么自动变化的；
+\item \textbf{故意翻车题}：把 \texttt{\textbackslash{}label\{eq:loss\}} 挪到 \texttt{\textbackslash{}caption} 的位置思路套用到图上——故意写在 \texttt{\textbackslash{}includegraphics} 上面，编译两遍，看看 \texttt{\textbackslash{}ref} 显示出什么鬼编号。记住这个画面，以后见到它一秒确诊。
+\end{enumerate}
+
+从此，图、表、章节、公式的编号都成了活的，你的文档进入了“改稿零焦虑”状态。下一章啃 LaTeX 最大的招牌，也是 Word 最深的痛：\textbf{公式}。
