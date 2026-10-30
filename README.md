@@ -4,7 +4,7 @@
 
 - `main.tex` — 主文件（文档类 ctexbook，含封面、前言、目录、全部章节引入）
 - `chapters/ch01.tex` ~ `ch16.tex` — 16 章正文（由 markdown 自动转换，`tools/md2tex.py` 生成）
-- `tools/md2tex.py` — markdown → LaTeX 转换脚本（改了 md 源文件后重跑它，再编译）
+- `tools/md2tex.py` — markdown → LaTeX 转换脚本
 - `build.bat` — 一键编译（xelatex 跑两遍）
 - `main.pdf` — 成品
 
@@ -20,14 +20,6 @@ cd latex-book
 xelatex -interaction=nonstopmode main.tex
 xelatex -interaction=nonstopmode main.tex
 ```
-
-## 修改流程
-
-内容源头是工作区根目录的 markdown 章节文件（`第N章-*.md` 和 `样稿-第1/2章-*.md`）。要改内容：
-
-1. 改对应的 md 文件；
-2. 运行 `python tools/md2tex.py` 重新生成 `chapters/*.tex`；
-3. 重新编译 `main.tex` 两遍。
 
 也可以直接改 `chapters/*.tex`，但下次重跑转换脚本会被覆盖。
 
